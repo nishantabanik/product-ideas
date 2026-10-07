@@ -1,0 +1,5 @@
+.bench-head { font-size:20px; line-height:1.4; font-weight:600; margin:0; }
+.bench-sub { color:var(--mute); font-size:13px; margin:6px 0 0; }
+.bench-rec { display:grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap:14px; }
+.bench-rec b { display:block; font-size:18px; } .bench-rec span { font-size:12px; color:var(--mute); display:block; }
+.bench-note { color:var(--mute); font-size:12px; display:block; }

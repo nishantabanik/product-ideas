@@ -1,0 +1,4 @@
+date,time,platform,content
+2026-10-12,09:00,linkedin,"Example LinkedIn post. Write the full text here, it can be long."
+2026-10-12,18:30,x,"Example X post, up to 280 characters."
+2026-10-13,08:15,both,"This one goes to LinkedIn and X at the same time."

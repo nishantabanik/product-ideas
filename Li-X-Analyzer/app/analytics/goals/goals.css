@@ -1,0 +1,8 @@
+.goals-form { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)) auto; gap:12px; align-items:end; }
+.goals-list { display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:16px; }
+.goals-nums { display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:14px; }
+.goals-nums b { display:block; font-size:16px; } .goals-nums span { font-size:12px; color:var(--mute); }
+.goals-chip.achieved, .goals-chip.on_track { background:rgba(46,160,90,.2); }
+.goals-chip.behind { background:rgba(220,70,60,.2); }
+.goals-top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+@media (max-width: 760px) { .goals-form { grid-template-columns: 1fr 1fr; } }

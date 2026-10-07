@@ -1,0 +1,82 @@
+import { chromium } from "playwright-core";
+const S = process.argv[2] || "./shots";
+import { mkdirSync } from "node:fs";
+mkdirSync(S, { recursive: true });
+const b = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH, args: ["--no-sandbox"] });
+const page = await b.newPage({ viewport: { width: 1360, height: 1000 }, timezoneId: "Europe/Berlin" });
+const errors = [];
+page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
+page.on("console", (m) => m.type() === "error" && errors.push("console: " + m.text()));
+const base = process.env.BASE || "http://localhost:3100";
+const step = (s) => console.log("step:", s);
+await page.goto(base + "/login"); await page.fill("input[name=password]", "pw123");
+await Promise.all([page.waitForURL(base + "/"), page.click("button")]);
+await page.click("text=Sync from Postiz"); await page.waitForSelector("text=Synced from Postiz", { timeout: 60000 });
+
+step("board + idea");
+await page.goto(base + "/studio");
+await page.fill("input[placeholder^='An idea']", "Why we deleted three reports");
+await page.click("button:has-text('Save idea')"); await page.waitForSelector(".dcard >> text=Why we deleted three reports");
+await page.click("button:has-text('Suggest ideas')"); await page.waitForSelector("text=Our weekly review");
+await page.click("button:has-text('Keep') >> nth=0"); await page.waitForTimeout(1200);
+
+step("draft + editor");
+await page.fill("input[placeholder^='An idea']", "Reporting time");
+await page.click("button:has-text('Start a draft')"); await page.waitForURL(/\/studio\/[a-z0-9]+$/);
+await page.screenshot({ path: `${S}/s-editor-empty.png`, fullPage: true });
+await page.fill("textarea[placeholder^='The point']", "We cut our reporting time by 60% in a quarter. The key was deleting reports nobody read.");
+await page.click("button:has-text('Write 3 versions')"); await page.waitForSelector("text=Use this version");
+await page.click("button:has-text('Use this version') >> nth=0");
+await page.waitForSelector("text=Saved", { timeout: 8000 });
+console.log("score visible:", await page.locator(".score").first().textContent());
+await page.screenshot({ path: `${S}/s-editor.png`, fullPage: true });
+
+step("review + approve + schedule");
+await page.click("button:has-text('Send for review')"); await page.waitForSelector("text=Sent for review");
+await page.waitForSelector("button:has-text('Approve')"); await page.click("button:has-text('Approve') >> nth=0"); await page.waitForSelector("text=Approved");
+await page.click("button:has-text('Schedule')"); await page.waitForSelector("text=Scheduled in Postiz");
+await page.waitForSelector("text=/It is in Postiz now/");
+
+step("x thread");
+await page.goto(base + "/studio");
+await page.click("button[role=tab]:has-text('X') >> nth=0");
+await page.fill("input[placeholder^='An idea']", "Thread about reports");
+await page.click("button:has-text('Start a draft')"); await page.waitForURL(/\/studio\/[a-z0-9]+$/);
+await page.click("button[role=tab]:has-text('Thread builder')");
+await page.fill(".tweet textarea >> nth=0", "We cut reporting time by 60%. A thread:");
+await page.click("button:has-text('Add a post')");
+await page.fill(".tweet textarea >> nth=1", "1. We stopped copying numbers by hand. What would you cut first?");
+await page.waitForSelector("text=Saved", { timeout: 8000 });
+await page.click("button:has-text('Approve')"); await page.waitForSelector("text=Approved");
+await page.click("button:has-text('Schedule')"); await page.waitForSelector("text=Scheduled in Postiz");
+await page.screenshot({ path: `${S}/s-thread.png`, fullPage: true });
+
+step("approval required");
+await page.goto(base + "/studio");
+await page.screenshot({ path: `${S}/s-board.png`, fullPage: true });
+
+step("pillars + library");
+await page.goto(base + "/studio/pillars");
+await page.fill("input[placeholder^='For example']", "Data");
+await page.fill("input[placeholder^='dashboard']", "reporting, analytics, numbers");
+await page.click("button:has-text('Save pillars')"); await page.waitForSelector("text=Pillars saved");
+await page.goto(base + "/studio/library");
+await page.fill("input >> nth=0", "My opener"); await page.fill("textarea", "Here is what nobody tells you about [topic].");
+await page.click("button:has-text('Save') >> nth=0"); await page.waitForSelector("text=Saved to our library");
+await page.screenshot({ path: `${S}/s-library.png`, fullPage: true });
+
+step("queue slots + fill");
+await page.goto(base + "/studio");
+await page.fill("input[placeholder^='An idea']", "Queue me");
+await page.click("button:has-text('Start a draft')"); await page.waitForURL(/\/studio\/[a-z0-9]+$/);
+await page.fill("textarea[placeholder^='A short first']", "Queue test post.\n\nA second paragraph with 3 details.\n\nWhat do you think?");
+await page.waitForSelector("text=Saved", { timeout: 8000 });
+await page.click("button:has-text('Approve')"); await page.waitForSelector("text=Approved");
+await page.goto(base + "/queue");
+await page.click("button:has-text('Add slot')");
+await page.click("button:has-text('Save slots')"); await page.waitForSelector("text=Queue slots saved");
+await page.reload();
+await page.click("button:has-text('Fill the queue now')"); await page.waitForSelector("text=/1 scheduled/", { timeout: 20000 });
+await page.screenshot({ path: `${S}/s-queue.png`, fullPage: true });
+console.log("ERRORS:", JSON.stringify(errors));
+await b.close();

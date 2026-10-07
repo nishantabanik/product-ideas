@@ -1,0 +1,4 @@
+.style-item { border:1px solid var(--border-2); border-radius:12px; background:var(--surface-2); padding:11px 13px; display:flex; flex-direction:column; gap:6px; }
+.style-item p { margin:0; font-size:13.5px; line-height:1.5; color:var(--ink-2); white-space:pre-wrap; }
+.style-item .row .grow { flex:1; }
+.style-help { margin:0; font-size:13px; color:var(--mute); line-height:1.5; }

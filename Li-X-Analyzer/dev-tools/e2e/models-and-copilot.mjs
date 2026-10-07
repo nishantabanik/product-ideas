@@ -1,0 +1,33 @@
+import { chromium } from "playwright-core";
+const S = process.argv[2] || "./shots";
+import { mkdirSync } from "node:fs";
+mkdirSync(S, { recursive: true });
+const b = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH, args: ["--no-sandbox"] });
+const page = await b.newPage({ viewport: { width: 1360, height: 1100 } });
+const errors = []; page.on("pageerror", (e) => errors.push(e.message));
+const base = process.env.BASE || "http://localhost:3100";
+await page.goto(base + "/login"); await page.fill("input[name=password]", "pw123");
+await Promise.all([page.waitForURL(base + "/"), page.click("button")]);
+// before Copilot: only the gateway
+await page.goto(base + "/studio/write");
+await page.waitForSelector("select[aria-label=Model] optgroup", { state: "attached" });
+console.log("groups before:", await page.locator("select[aria-label=Model] optgroup").evaluateAll((g) => g.map((x) => x.label)));
+// sign in with Copilot
+await page.goto(base + "/settings");
+await page.click("text=Sign in with GitHub"); await page.waitForSelector("text=ABCD-1234");
+await page.waitForSelector("text=/Signed in as octo/", { timeout: 30000 });
+await page.click("button:has-text('Test GitHub Copilot')"); await page.waitForSelector("text=/copilot answered/");
+console.log("copilot test ok");
+await page.goto(base + "/studio/write");
+await page.waitForSelector("select[aria-label=Model] optgroup:has-text('a') >> nth=1", { state: "attached" }).catch(() => {});
+await page.waitForFunction(() => document.querySelectorAll("select[aria-label=Model] optgroup").length >= 2, null, { timeout: 15000 });
+console.log("groups after:", await page.locator("select[aria-label=Model] optgroup").evaluateAll((g) => g.map((x) => x.label + ": " + [...x.querySelectorAll("option")].map((o) => o.textContent).join(", "))));
+await page.screenshot({ path: `${S}/n-models.png`, clip: { x: 250, y: 0, width: 1100, height: 1000 } });
+await page.fill("textarea >> nth=0", "Why we made our deploys faster");
+await page.selectOption("select[aria-label=Model]", "copilot::gpt-4.1");
+await page.click("button:has-text('Write the post')");
+await page.waitForSelector(".write-out textarea", { timeout: 30000 });
+const log = await (await fetch((process.env.MOCK || "http://localhost:4030") + "/__log")).json();
+console.log("copilot chat calls:", log.filter((l) => l.includes("/copilot/chat/completions")).length, "| gateway chat calls:", log.filter((l) => l.includes("/v1/chat/completions")).length);
+console.log("ERRORS", JSON.stringify(errors));
+await b.close();
