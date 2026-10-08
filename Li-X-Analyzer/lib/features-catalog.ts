@@ -46,7 +46,7 @@ export const CATALOG: Group[] = [
       { name: "Content analysis: topic, format, length, hook", what: "Which topics, post formats, lengths and openings earn the most, compared with our typical post.", where: "Analytics, Content tab", href: "/analytics/content", enable: "Needs posts with their text (posts made through Postiz or the Studio). Add pillars on Studio, Pillars to see topics." },
       { name: "Goal tracking", what: "Set a target such as 100,000 impressions a month and see progress, the pace we need and whether we are on track.", where: "Analytics, Goals tab", href: "/analytics/goals", enable: "Open the Goals tab, pick platform, number, period and target, and save." },
       { name: "Benchmarks against our own past", what: "This month against last month, the same month last year, our usual month and our best ever, plus our records.", where: "Analytics, Benchmarks tab", href: "/analytics/benchmarks", enable: "Needs a few months of daily numbers, from a LinkedIn export or Postiz." },
-      { name: "Analytics Chat (Ask AI)", what: "Chat with an AI about your numbers, missing data, and how to resolve syncing issues. Can automatically trigger a Postiz sync for missing X data.", where: "Analytics, Ask AI tab", href: "/analytics/chat", enable: MODEL, need: ["model"] },
+      { name: "Analytics AI Assistant", what: "Chat with an AI about your numbers, missing recent data (last 7 days), LinkedIn/X comments, and resolution steps. Can automatically trigger a Postiz sync for missing X data.", where: "Analytics, Ask AI tab", href: "/analytics/chat", enable: MODEL, need: ["model"] },
     ],
   },
   {

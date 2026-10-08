@@ -7,9 +7,12 @@ import { useRouter } from "next/navigation";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STARTERS = [
-  "Why is my LinkedIn data missing?",
-  "When was X last synced?",
-  "How can I get my latest comments?",
+  "Why is my LinkedIn analytics not showing till today?",
+  "Why are my LinkedIn numbers missing for the last 7 days?",
+  "Why is X data not showing for recent days?",
+  "When was X last synced and can you fix it?",
+  "Why can't I see LinkedIn comments and how do I get them?",
+  "Resolve missing data for the last 5 days",
   "Explain my recent performance"
 ];
 
@@ -66,7 +69,7 @@ export default function AnalyticsChatPanel({ llm }: { llm: boolean }) {
       <div className="chatbox" style={{ maxHeight: 600 }}>
         {msgs.length === 0 && (
           <div className="stack" style={{ gap: 8 }}>
-            <p className="hint" style={{ margin: 0 }}>{llm ? "Ask anything about your analytics, missing data, or how to resolve data syncing issues." : "Connect a model on the Settings page first."}</p>
+            <p className="hint" style={{ margin: 0 }}>{llm ? "Ask why recent data is missing (last 7 days), how to fix it, or about LinkedIn/X comments. I can trigger a sync when appropriate." : "Connect a model on the Settings page first."}</p>
             <div className="slotchips">{STARTERS.map((s) => <button key={s} className="chip tiny" type="button" disabled={!llm} onClick={() => send(s)}>{s}</button>)}</div>
           </div>
         )}
@@ -82,7 +85,7 @@ export default function AnalyticsChatPanel({ llm }: { llm: boolean }) {
         <div ref={end} />
       </div>
       <div className="row" style={{ alignItems: "flex-end" }}>
-        <textarea className="input" style={{ minHeight: 56, flex: 1 }} value={text} disabled={!llm} placeholder="Ask why data is missing or how to fix it... Enter sends, Shift+Enter adds a line." onChange={(e) => setText(e.target.value)}
+        <textarea className="input" style={{ minHeight: 56, flex: 1 }} value={text} disabled={!llm} placeholder="Ask why data is missing for last 7 days, how to fix it, or about LinkedIn/X comments..." onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(text); } }} />
         <button className="btn" disabled={!llm || busy || !text.trim()} onClick={() => send(text)}><Icon name={busy ? "refresh" : "send"} size={16} className={busy ? "spin" : ""} />Ask</button>
       </div>
