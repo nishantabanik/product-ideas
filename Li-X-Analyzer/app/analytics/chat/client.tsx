@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/app/components/icons";
 import { useToast } from "@/app/components/toast";
-import ModelSelect from "@/app/studio/chat/model-select";
+import ModelSelect from "@/app/studio/model-select";
 import { useRouter } from "next/navigation";
 
 type Msg = { role: "user" | "assistant"; content: string };
