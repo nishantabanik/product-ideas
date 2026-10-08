@@ -1,6 +1,6 @@
 import Seg from "../components/seg";
 
-export type AnalyticsTab = "numbers" | "benchmarks" | "content" | "goals" | "growth" | "reports";
+export type AnalyticsTab = "numbers" | "benchmarks" | "content" | "goals" | "growth" | "reports" | "chat";
 
 /** The sections of Analytics. Every page in this group shows it at the top right of its header. */
 export default function AnalyticsTabs({ active }: { active: AnalyticsTab }) {
@@ -11,5 +11,6 @@ export default function AnalyticsTabs({ active }: { active: AnalyticsTab }) {
     { value: "goals", label: "Goals", href: "/analytics/goals" },
     { value: "growth", label: "Growth", href: "/analytics/growth" },
     { value: "reports", label: "Reports", href: "/analytics/reports" },
+    { value: "chat", label: "Ask AI", href: "/analytics/chat" },
   ]} />;
 }
