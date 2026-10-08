@@ -14,7 +14,7 @@ export default async function AnalyticsChatPage() {
   return (
     <main className="p">
       <div className="page-head">
-        <h1>Ask AI about your numbers</h1>
+        <h1>Analytics AI Assistant</h1>
         <AnalyticsTabs active="chat" />
       </div>
       <div className="card">
