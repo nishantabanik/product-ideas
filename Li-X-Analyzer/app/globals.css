@@ -247,3 +247,12 @@ input[type=date].input, input[type=datetime-local].input { color-scheme:dark; }
 .chatmsg { border-radius:12px; padding:10px 12px; font-size:13.5px; line-height:1.5; white-space:pre-wrap; max-width:92%; }
 .chatmsg.user { align-self:flex-end; background:var(--blue-soft); border:1px solid rgba(57,135,229,.4); }
 .chatmsg.assistant { align-self:flex-start; background:var(--surface-2); border:1px solid var(--border-2); }
+
+/* side advisor */
+.advisor-fab { position:fixed; right:18px; bottom:18px; z-index:60; width:54px; height:54px; border-radius:50%; border:1px solid var(--border-2); background:var(--blue-btn); color:#fff; cursor:pointer; display:grid; place-items:center; box-shadow:0 12px 30px rgba(0,0,0,.45); transition:background .15s, transform .15s var(--ease); }
+.advisor-fab:hover { background:var(--blue-btn-hi); transform:translateY(-2px); }
+.advisor-panel { position:fixed; right:18px; bottom:18px; z-index:60; width:min(430px,calc(100vw - 24px)); max-height:min(660px,calc(100vh - 24px)); display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--border-2); border-radius:18px; box-shadow:0 24px 60px rgba(0,0,0,.55); overflow:hidden; animation:rise .28s var(--ease) both; }
+.advisor-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; border-bottom:1px solid var(--border); }
+.advisor-head b { font-size:15px; }
+.advisor-body { display:flex; flex-direction:column; gap:12px; padding:14px 16px; overflow:hidden; }
+@media (max-width:860px) { .advisor-panel { right:10px; bottom:10px; width:calc(100vw - 20px); } }

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { isAuthed } from "@/lib/auth";
 import { newCount } from "@/lib/comments/store";
+import { llmAvailable } from "@/lib/llm";
 import { unseenAlerts } from "@/lib/pulse/store";
 import { Icon } from "./components/icons";
+import SideAdvisor from "./components/side-advisor";
 import { ToastProvider } from "./components/toast";
 import { MobileNav, SideNav } from "./nav";
 import "./globals.css";
@@ -14,6 +16,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // The number on the Comments tab. A database hiccup must never stop the page from rendering.
   const open = authed ? await newCount().catch(() => 0) : 0;
   const alerts = authed ? await unseenAlerts().catch(() => 0) : 0;
+  const llm = authed ? await llmAvailable().catch(() => false) : false;
   return (
     <html lang="en">
       <body>
@@ -31,6 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <MobileNav open={open} alerts={alerts} />
                 <main className="main">{children}</main>
               </div>
+              <SideAdvisor llm={llm} />
             </div>
           ) : (
             children
