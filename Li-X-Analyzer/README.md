@@ -58,6 +58,7 @@ The same list is inside the app, on the Features page (left menu), with a link t
 | Engage | Alerts when a post takes off or starts slowly | Alerts |
 | Set up | Model gateway (URL, key, model dropdown), GitHub Copilot sign in | Settings |
 | Set up | X and LinkedIn connections with test buttons | Settings |
+| Set up | Side advisor: chat on every page, answers for that page and runs the fix when it can (sync, X replies, Advisory) | Bottom right corner, every page |
 | Automatic | Daily Postiz sync (06:00 UTC) and daily Advisory (06:20 UTC) | Runs by itself |
 
 ## A simple week with the app

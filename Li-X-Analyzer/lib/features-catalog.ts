@@ -101,6 +101,7 @@ export const CATALOG: Group[] = [
       { name: "GitHub Copilot sign in", what: "An experimental alternative to a gateway, using a device code.", where: "Settings, Coach model", href: "/settings", enable: "On Settings press Sign in with GitHub and type the shown code on GitHub." },
       { name: "X and LinkedIn connections", what: "Status of the X keys and the LinkedIn connection, with a test button.", where: "Settings", href: "/settings", enable: "Set the X and LinkedIn variables in Vercel (see the README), redeploy, then press Test connection." },
       { name: "Features page", what: "This page: every feature, where it lives and how to switch it on.", where: "Features, left menu", href: "/features", enable: READY },
+      { name: "Side advisor", what: "A chat window in the bottom right of every page. Ask why data is missing, what a screen means, or how to fix something. It answers for the page you are on, and runs the fix itself when one exists (sync X, read new X replies, refresh the Advisory).", where: "Every page, bottom right corner", href: "/", enable: MODEL, need: ["model"] },
     ],
   },
   {
