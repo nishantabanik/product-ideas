@@ -1,0 +1,4 @@
+# CV import and compact palette
+Keep the existing native app structure. Use PDF.js server-side in a bounded, timed child process; macOS textutil handles legacy Word without sending documents externally. Uploads are 10MB max, PDFs20pages, same-origin POST, two concurrent extractions, no file retention/logging. Extracted text can be reviewed/pasted and is separate from editor fields until explicit import confirmation.
+ATS comparison is transparent local lexical coverage and text structure cues, no model request or hiring suitability inference. UI states limitations. Alternative cloud document parsing rejected because local parsing meets this personal app's need without CV disclosure.
+Colour selection uses a compact vertical details menu anchored at the rightmost header edge; updates tokens without view rerender. Remove duplicate arrow links from sidebar groups.

@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {analyzeCV,importSections} from '../src/cv-analysis.js';
+const cv='Alex Example\nalex@example.com\nWork experience\n2023–2025\n- Built Terraform systems on GCP using Python\nEducation\nComputer Science\nSkills\nTerraform Python GCP';
+const jd='We need Terraform and Python experience. Terraform infrastructure on GCP and Kubernetes is required. Build platform observability and automate deployments using Python.';
+test('job match reports exact terms and structure, without guessing synonyms',()=>{const r=analyzeCV(cv,jd);assert.ok(r.found.includes('terraform'));assert.ok(r.missing.includes('kubernetes'));assert.ok(r.coverage>0&&r.coverage<100);assert.ok(r.checks.every(x=>x.pass));assert.ok(r.wordCount>15);});
+test('comparison rejects empty inputs and computes zero overlap honestly',()=>{assert.throws(()=>analyzeCV('short',jd),/cv-short/);assert.throws(()=>analyzeCV(cv,'short'),/jd-short/);const r=analyzeCV('xylophone '.repeat(15),'kubernetes '.repeat(15));assert.equal(r.coverage,0);});
+test('section import recognizes German headings and preserves unknown lines',()=>{const r=importSections('Lebenslauf\nAlex Example\nKontakt: alex@example.com\nBerufserfahrung\n2024 Koch\nAusbildung\nSchule\nKenntnisse\nDeutsch A1\nPortfolio: example.test');assert.equal(r.name,'Alex Example');assert.ok(r.experience.includes('2024 Koch'));assert.ok(r.skills.includes('Portfolio: example.test'));});
+test('sentence punctuation does not turn a matching skill into a missing term',()=>{const r=analyzeCV('Alex Example has Python skills and experience in software development. '.repeat(2),'Python. Python is required for this software developer position. We need Python and development experience.');assert.ok(r.found.includes('python'));assert.ok(!r.missing.includes('python.'));});

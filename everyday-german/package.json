@@ -1,0 +1,20 @@
+{
+  "name": "everyday-german",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Bilingual, responsive German A1 practice website",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check src/app.js && node --check src/content.js && node --check src/state.js && node --check src/i18n.js && node --check src/features.js && node --check src/expansion.js && node --check src/lessons-extra.js && node --check src/audio.js && node --check src/telc-exams.js && node --check src/telc-a2-exams.js && node --check src/telc-b1-exams.js && node --check src/telc-b2-exams.js && node --check src/curriculum.js && node --check scripts/generate-audio.mjs && node --check server.mjs && node --check src/cv-tools.js && node --check src/cv-analysis.js && node --check scripts/extract-cv.mjs && node --check src/telc-format.js && node --check src/telc-ui.js",
+    "audio:generate": "node --env-file-if-exists=.env scripts/generate-audio.mjs"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "pdfjs-dist": "6.5.438"
+  }
+}

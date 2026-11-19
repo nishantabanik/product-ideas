@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {spawnSync,execFileSync} from 'node:child_process';
+import {mkdtempSync,writeFileSync,readFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+const extract=(bytes,ext)=>spawnSync(process.execPath,['scripts/extract-cv.mjs',ext],{input:bytes,encoding:'utf8',timeout:25000});
+function pdf(){const text='Alex Example - Work experience 2024 - Python developer - Education - Skills';const stream=`BT /F1 12 Tf 50 750 Td (${text}) Tj ET`;const objs=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`];let out='%PDF-1.4\n',offsets=[0];objs.forEach((s,i)=>{offsets.push(Buffer.byteLength(out));out+=`${i+1} 0 obj\n${s}\nendobj\n`;});const pos=Buffer.byteLength(out);out+=`xref\n0 6\n0000000000 65535 f \n`+offsets.slice(1).map(n=>String(n).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${pos}\n%%EOF`;return Buffer.from(out);}
+test('PDF extraction reads a synthetic text CV',()=>{const r=extract(pdf(),'pdf');assert.equal(r.status,0,r.stderr);const data=JSON.parse(r.stdout);assert.ok(data.text.includes('Alex Example'));assert.equal(data.pages,1);});
+test('invalid files produce controlled errors',()=>{const r=extract(Buffer.from('not a PDF'),'pdf');assert.equal(r.status,1);assert.ok(JSON.parse(r.stdout).error);});
+test('macOS DOC and DOCX imports extract a synthetic CV', {skip:process.platform!=='darwin'},()=>{const dir=mkdtempSync(path.join(tmpdir(),'eg-cv-'));try{const input=path.join(dir,'sample.txt');writeFileSync(input,'Alex Example\nWork experience\n2024 Software Developer\nEducation\nComputer Science\nSkills\nPython');for(const ext of ['doc','docx']){const file=path.join(dir,'sample.'+ext);execFileSync('/usr/bin/textutil',['-convert',ext,'-output',file,input]);const r=extract(readFileSync(file),ext);assert.equal(r.status,0,r.stderr);assert.ok(JSON.parse(r.stdout).text.includes('Software Developer'));}}finally{rmSync(dir,{recursive:true,force:true});}});

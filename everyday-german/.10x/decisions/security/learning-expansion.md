@@ -1,0 +1,2 @@
+# Security review
+No external personal-data transfer. CV inputs are escaped, bounded on load and stored locally. API keys belong only in ignored .env; generator uses fixed catalogue text, no web generation endpoint or browser key. MP3 static playback uses existing self-only CSP. Server remains loopback-only. Existing source-readable answer keys are appropriate for practice. Existing secrets were not searched or printed.

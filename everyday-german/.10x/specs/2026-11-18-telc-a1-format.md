@@ -1,0 +1,4 @@
+# telc A1 alignment
+Source: supplied 2017 10th-edition official Übungstest1 (44PDFpages), current official telc exam page retrieved2026-11-18; original exercise prose retained.
+Correct: listening6/4/5, twice/once/twice; reading5/5/5 with two personal texts, adverts and signs; form5fields plus~30word message3points; speaking introduction/spelling/numbers then two word-card rounds and two picture-card rounds.20min listening,45min sharedRW, separately started15minoral. Human-rated writing3×3+1 and speaking3+6+6;15points/skill,60total,36threshold only after ratings. Original objective results remain separate until rated.
+Keep other exam levels/providers and current learner data. Version new sessions; preserve old question6IDs and legacy sessions/results. Add original pictograms and format tests. No exam provider content copied. No deploy/commit.
