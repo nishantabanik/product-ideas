@@ -1,0 +1,4 @@
+# Learning expansion — 2026-11-04
+Implemented original 300-item bank (75 per skill), 75 guided micro-lessons, stable original exam IDs, six themes, nested sidebar, learning/exam hubs, four local planning checklists, five ten-item games, short readiness check, and CV editor with live preview, persistence, three layouts, JSON export and print CSS. Exercises and answer material remain German. UI and explanations support English/German.
+Added optional ElevenLabs generation CLI, fixed catalogue input only, cached MP3 playback, environment example and voice/rate settings. No key available; no generation run. Multiple voices alternate between exercises, not speaker turns. Browser speech remains fallback.
+Not implemented: AI grading/examiner, immigration assistant/guides, account features or every Ankommo CV template. These are not presented as available.
