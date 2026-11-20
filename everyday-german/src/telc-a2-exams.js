@@ -8,7 +8,7 @@ const l1=[
  ['Sie möchten einen Reiseführer kaufen.','b','c'],
  ['Sie haben Ihre Handschuhe im Kaufhaus verloren.','a','c'],
  ['Sie möchten Waschmittel kaufen.','a','c'],
- ['Sie suchen Sportschuhe.','c','b']
+ ['Sie suchen Fahrräder.','c','b']
 ];
 const directory='STADTHAUS KAUFHAUS\nErdgeschoss: Kosmetik · Waschmittel · Fundbüro · Information\n1. Stock: Schuhe · Kleidung · Küche · Elektrogeräte\n2. Stock: Kinderbücher · Spielwaren · Schreibwaren · Reiseführer\n3. Stock: Sport · Fahrräder · Foto · Café';
 const story='Ein neues Leben in Leipzig\nVor einem Jahr zog die 29-jährige Sofia aus Madrid nach Leipzig. Sie arbeitet in einer Bäckerei und besucht zweimal pro Woche einen Deutschkurs. Am Anfang kannte sie niemanden. Eine Kollegin lud sie zu einem Kochabend ein. Dort lernte Sofia ihre Nachbarin Jana kennen. Jetzt gehen die beiden oft zusammen spazieren oder ins Kino. Sofia wohnt in einer kleinen Wohnung nahe dem Park. Am Wochenende telefoniert sie mit ihrer Familie in Spanien. Im Sommer möchte sie ihre Eltern nach Deutschland einladen.';
@@ -16,7 +16,7 @@ const article=[
  ['Sofia lebt seit einem Jahr in Leipzig.',true],['Sie arbeitet in einem Restaurant.',false],['Jana ist Sofias Nachbarin.',true],['Sofia telefoniert am Wochenende mit ihrer Familie.',true],['Ihre Eltern wohnen bereits in Deutschland.',false]
 ];
 const ads=[
- ['Sie möchten in den Ferien in Deutschland arbeiten und studieren.','g'],
+ ['Sie möchten während Ihres Studiums in Deutschland nebenbei arbeiten und suchen Informationen dazu.','g'],
  ['Ein Freund sucht einen günstigen Mietwagen für eine Rundreise.','f'],
  ['Sie möchten zusammen mit anderen kochen lernen.','d'],
  ['Ihre Freundin will in Deutschland Urlaub machen und Deutsch lernen.','e'],
@@ -39,7 +39,7 @@ const hears=[
 ];
 const office='Frau Weber begrüßt den neuen Mitarbeiter Herrn Lang in der Firma. Sie erklärt, wo die Kolleginnen und Kollegen arbeiten. Die Abteilungsleiterin Frau Koch sitzt neben dem Besprechungsraum. Der Sohn des Chefs arbeitet am Empfang. Der Hausmeister ist heute in der Werkstatt. Die Praktikantin sitzt im Büro gegenüber der Küche. Die Sekretärin arbeitet im Schreibbüro.';
 const locationCodes=['a','b','c','d','e','f','g','h','i'];
-const locations=['im ersten Stock','neben dem Besprechungsraum','am Empfang','neben der Teeküche','im Kopierraum','in der Werkstatt','über dem Computerraum','im Keller','im Schreibbüro'];
+const locations=['im ersten Stock','neben dem Besprechungsraum','am Empfang','gegenüber der Küche','im Kopierraum','in der Werkstatt','über dem Computerraum','im Keller','im Schreibbüro'];
 const persons=[['Frau Koch','b'],['Sohn des Chefs','c'],['Hausmeister','f'],['Praktikantin','d'],['Sekretärin','i']];
 const exercises=[...hears,
  ...l1.map((x,i)=>item(`a2telc-r${i+1}`,1,'Wegweiser im Kaufhaus',directory,x[0],['Erdgeschoss','2. Stock','anderes Stockwerk'],['a','b','c'].indexOf(x[1]),{options:['Erdgeschoss','2. Stock','anderes Stockwerk']})),
