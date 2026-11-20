@@ -9,11 +9,27 @@ export function installCVTools(app,{getExtra,getLang,save,render}){
  app.addEventListener('change',async e=>{if(e.target.id==='ats-source'){report=null;document.querySelector('#ats-report').innerHTML='';return;}if(e.target.id!=='cv-upload')return;const file=e.target.files?.[0];if(!file)return;const version=++uploadVersion,lang=getLang(),t=(en,de)=>u(lang,en,de),status=document.querySelector('#cv-import-status');
  const ext=file.name.split('.').pop().toLowerCase();if(!['pdf','doc','docx'].includes(ext)||file.size>10*1024*1024){status.textContent=t('Choose PDF, DOC or DOCX up to 10 MB.','Wählen Sie PDF, DOC oder DOCX bis 10 MB.');return;}
  status.textContent=t('Extracting text locally…','Text wird lokal erkannt…');e.target.disabled=true;
- try{const response=await fetch('/api/cv-extract?format='+ext,{method:'POST',headers:{'Content-Type':'application/octet-stream'},body:file,signal:AbortSignal.timeout(25000)});const data=await response.json();if(!response.ok||!data.text)throw Error('extract');if(version!==uploadVersion)return;getExtra().cvSource=data.text;save();report=null;render();document.querySelector('#cv-import-status').textContent=t('Text extracted. Review it below before applying.','Text erkannt. Prüfen Sie ihn vor der Übernahme.');}
+ try{const response=await fetch('/api/cv-extract?format='+ext,{method:'POST',headers:{'Content-Type':'application/octet-stream'},body:file,signal:AbortSignal.timeout(25000)});const data=await response.json();if(!response.ok||!data.text)throw Error('extract');if(version!==uploadVersion)return;getExtra().cvSource=data.text;save();report=null;if(!status.isConnected)return;render();const updatedStatus=document.querySelector('#cv-import-status');if(updatedStatus)updatedStatus.textContent=t('Text extracted. Review it below before applying.','Text erkannt. Prüfen Sie ihn vor der Übernahme.');}
  catch{if(status?.isConnected)status.textContent=t('Could not extract text. Try an unencrypted text PDF (up to 20 pages), DOC or DOCX, or paste the text below.','Texterkennung nicht möglich. Nutzen Sie eine unverschlüsselte Text-PDF (bis 20 Seiten), DOC oder DOCX, oder fügen Sie den Text unten ein.');}
  finally{const input=document.querySelector('#cv-upload');if(input)input.disabled=false;}
  });
- app.addEventListener('input',e=>{if(e.target.closest('#cv-form')){report=null;const el=document.querySelector('#ats-report');if(el)el.innerHTML='';return;}if(!['cv-source','job-description'].includes(e.target.id))return;const extra=getExtra();extra[e.target.id==='cv-source'?'cvSource':'jobDescription']=e.target.value;save();report=null;const el=document.querySelector('#ats-report');if(el)el.innerHTML='';});
+ app.addEventListener('input',e=>{
+   const input=e.target;
+   if(input.closest('#cv-form')||['cv-source','job-description'].includes(input.id)){
+     report=null;
+     const output=document.querySelector('#ats-report');
+     const error=document.querySelector('#ats-error');
+     if(output)output.innerHTML='';
+     if(error)error.textContent='';
+   }
+   if(!['cv-source','job-description'].includes(input.id))return;
+   const extra=getExtra();
+   if(input.id==='cv-source'){
+     extra.cvSource=input.value;
+     if(input.value.trim())document.querySelector('#ats-source').value='imported';
+   }else extra.jobDescription=input.value;
+   save();
+ });
  app.addEventListener('click',e=>{const b=e.target.closest('[data-cv]');if(!b)return;const extra=getExtra(),lang=getLang(),t=(en,de)=>u(lang,en,de);
  if(b.dataset.cv==='import'){const text=document.querySelector('#cv-source').value;if(!text.trim())return;if(!window.confirm(t('Replace the CV editor fields with the reviewed text?','Editorfelder durch den geprüften Text ersetzen?')))return;extra.cv=importSections(text);extra.cvSource=text;save();report=null;render();}
  if(b.dataset.cv==='analyze'){const source=document.querySelector('#ats-source').value==='imported'?document.querySelector('#cv-source').value:Object.entries(extra.cv).filter(([,v])=>v.trim()).map(([k,v])=>k+'\n'+v).join('\n\n');const jd=document.querySelector('#job-description').value;try{report=analyzeCV(source,jd);reportInput=JSON.stringify([extra.cv,extra.cvSource,extra.jobDescription]);document.querySelector('#ats-error').textContent='';document.querySelector('#ats-report').innerHTML=renderReport(report,lang);}catch(err){document.querySelector('#ats-report').innerHTML='';document.querySelector('#ats-error').textContent=err.message==='cv-short'?t('Add at least 80 characters of CV text.','Fügen Sie mindestens 80 Zeichen Lebenslauftext hinzu.'):t('Add at least 80 characters of job description.','Fügen Sie mindestens 80 Zeichen Stellenbeschreibung hinzu.');}}

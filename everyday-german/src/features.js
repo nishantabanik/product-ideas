@@ -340,7 +340,7 @@ export function extraView(path,params,{state,extra}){
           <div>
             <span class="eyebrow">${u('EXAM PREPARATION','PRÜFUNGSVORBEREITUNG')}</span>
             <h1 tabindex="-1" style="margin-bottom:6px">${u('German Exams & Certifications','Deutschprüfungen & Zertifikate')}</h1>
-            <p>${u('Official exam simulations: telc, Goethe-Zertifikat, DTZ and ÖIF from A1 to C1.','Gezielte Vorbereitung für telc, Goethe-Zertifikat, DTZ und ÖIF von A1 bis C1.')}</p>
+            <p>${u('Compare Goethe and telc exam formats and open official practice materials for A1 to C1.','Vergleichen Sie Goethe- und telc-Prüfungsformate und öffnen Sie offizielle Übungsmaterialien für A1 bis C1.')}</p>
           </div>
           <div class="apple-segmented-bar" style="margin:0">
             ${EXAM_LEVELS.map(lvl=>`<a href="#exams?lvl=${lvl.id}" class="apple-segmented-item ${selectedLevel===lvl.id?'active':''}">${E(lvl.code)}</a>`).join('')}
@@ -365,10 +365,6 @@ export function extraView(path,params,{state,extra}){
                 </div>
               </div>
               <div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:12px;color:var(--muted)">
-                  <span>${lvl.tasks} ${u('Tasks','Aufgaben')}</span>
-                  <span>${lvl.boards[0]?.timeMin||70} ${u('Minutes','Minuten')}</span>
-                </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap">
                   ${['a1','a2','b1','b2','c1'].includes(lvl.id)?`
                     <a href="#mock?exam=goethe-${lvl.id}" class="button primary" style="flex:1;min-width:105px;font-size:12px;padding:8px 8px;text-align:center">Goethe ${lvl.code} →</a>
@@ -907,14 +903,6 @@ export function installFeatures(app,{getState,getExtra,save,render,speak,stopAud
       }
       return;
     }
-    if(b.dataset.action==='pick-exam-level'){
-      const lvl=b.dataset.level||'a1';
-      extra.sidebarLevel=lvl;
-      save();
-      render();
-      return;
-    }
-
     // Stop persona voice
     if(b.dataset.action==='stop-persona'){
       stopAudio?.();

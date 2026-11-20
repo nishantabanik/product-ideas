@@ -3,4 +3,30 @@ export function stopRecording(){const settle=finishPlayback;finishPlayback=null;
 export function audioStatus(){if(!statusPromise)statusPromise=fetch('/api/audio-status').then(r=>r.ok?r.json():{available:[]}).catch(()=>({available:[]}));return statusPromise;}
 export async function playRecording(id,button,onEnd){const status=await audioStatus();if(!status.available.includes(id))return false;return playAudioFile('/public/audio/'+encodeURIComponent(id)+'.mp3',button,onEnd);}
 export async function playTTS(text,voiceKey,button,onEnd,opts={}){const clean=(text||'').trim();if(!clean)return false;const params=new URLSearchParams({voice:voiceKey||'katja',text:clean});if(opts.rate)params.set('rate',String(Math.round(opts.rate)));if(opts.pitch)params.set('pitch',String(Math.round(opts.pitch)));if(opts.instant)params.set('instant','1');return playAudioFile('/api/tts?'+params.toString(),button,onEnd);}
-export function playAudioFile(url,button,onEnd){stopRecording();return new Promise(resolve=>{let settled=false;const finish=success=>{if(settled)return;settled=true;finishPlayback=null;resolve(success);};const inst=new Audio();audio=inst;finishPlayback=finish;inst.preload='auto';inst.onended=()=>{finish(true);stopRecording();onEnd?.();};inst.onerror=()=>{finish(false);stopRecording();};inst.src=url;inst.play().catch(()=>{finish(false);stopRecording();});});}
+export function playAudioFile(url,button,onEnd){
+  stopRecording();
+  return new Promise(resolve=>{
+    const instance=new Audio();
+    audio=instance;
+    const finish=success=>{
+      if(finishPlayback===finish)finishPlayback=null;
+      resolve(success);
+    };
+    const fail=()=>{
+      if(audio!==instance)return;
+      finish(false);
+      stopRecording();
+    };
+    finishPlayback=finish;
+    instance.preload='auto';
+    instance.onended=()=>{
+      if(audio!==instance)return;
+      finish(true);
+      stopRecording();
+      onEnd?.();
+    };
+    instance.onerror=fail;
+    instance.src=url;
+    instance.play().catch(fail);
+  });
+}

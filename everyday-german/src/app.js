@@ -13,6 +13,8 @@ import {LEVEL_EXERCISES,getExercisesForLevel} from './level-exercises.js';
 import {TELC_A2_EXERCISES} from './telc-a2-exams.js';
 import {TELC_B1_EXERCISES} from './telc-b1-exams.js';
 import {TELC_B2_EXERCISES} from './telc-b2-exams.js';
+import {dailyThought} from './daily-thought.js';
+import {examFormats} from './exam-formats.js';
 
 export const allExercises = [
   ...exercises,
@@ -24,7 +26,8 @@ export const allExercises = [
   ...LEVEL_EXERCISES.b2,
   ...LEVEL_EXERCISES.c1
 ];
-export const findExercise = id => allExercises.find(q => q.id === id) || exercises.find(q => q.id === id);
+const exerciseById = new Map(allExercises.map(q => [q.id, q]));
+export const findExercise = id => exerciseById.get(id);
 
 const app=document.querySelector('#app');
 let storage;try{storage=window.localStorage;}catch{storage=null;}
@@ -47,26 +50,57 @@ const announce=msg=>{document.querySelector('#announcer').textContent=msg;};
 const date=value=>new Intl.DateTimeFormat(state.lang==='de'?'de-DE':'en-GB',{day:'numeric',month:'short'}).format(value);
 const savedStatus=q=>state.attempts[q.id]?(state.attempts[q.id].correct===false?'pending':'done'):'new';
 function stopAudio(){const finish=synthesisFinish;synthesisFinish=null;if(finish)finish(false);audioVersion++;stopRecording();if('speechSynthesis' in window)window.speechSynthesis.cancel();audioRunning=false;if(audioButton?.isConnected){audioButton.innerHTML=audioMarkup;audioButton.setAttribute('aria-label',audioLabel);}audioButton=null;}
-function navigate(hash){if(location.hash===hash)render(true);else location.hash=hash;}
+function renderRoute(){
+  mobileOpen=false;
+  wordRevealed=false;
+  wordMeaning=false;
+  sidebarSelection=null;
+  render(true);
+}
+function navigate(hash){
+  if(location.hash!==hash)history.pushState(null,'',hash);
+  renderRoute();
+}
+let sidebarSelection=null;
+function selectSidebarLevel(level){
+  sidebarSelection=level;
+  extra.sidebarLevel=level;
+  const sidebar=document.querySelector('.sidebar');
+  for(const tab of sidebar.querySelectorAll('[data-action="pick-exam-level"]')){
+    const selected=tab.dataset.level===level;
+    tab.classList.toggle('active',selected);
+    tab.setAttribute('aria-pressed',String(selected));
+  }
+  const {path,params}=route();
+  const exam=path==='mock'?params.get('exam')||'telc-a1':path==='mock/live'?state.mock?.exam:null;
+  const active=exam?'mock?exam='+exam:'';
+  sidebar.querySelector('.exam-board-subnav').innerHTML=renderExamBoardSubnav(level,active);
+  saveExtra();
+}
 function pageHeader(k,desc,badge='sample'){return `<div class="page-heading">${label(badge)}<h1 tabindex="-1">${esc(t(k))}</h1><p>${esc(t(desc))}</p></div>`;}
 function renderExamBoardSubnav(level, active){
   const lvl = level || 'a1';
   const upper = lvl.toUpperCase();
   const list = [
-    { name: `Goethe ${upper}`, url: `mock?exam=goethe-${lvl}`, new: true },
-    { name: `telc ${upper}`, url: `mock?exam=telc-${lvl}`, new: true },
-    { name: `Allgemein ${upper}`, url: `practice?level=${lvl}`, new: false }
+    { name: `Goethe ${upper}`, url: `mock?exam=goethe-${lvl}` },
+    { name: `telc ${upper}`, url: `mock?exam=telc-${lvl}` },
+    { name: `Allgemein ${upper}`, url: `practice?level=${lvl}` }
   ];
   return list.map(item => `
-    <a href="#${item.url}" class="exam-provider-row ${active===item.url?'active':''}">
+    <a href="#${item.url}" class="exam-provider-row ${active===item.url?'active':''}" ${active===item.url?'aria-current="page"':''}>
       <span>${esc(item.name)}</span>
-      ${item.new ? '<span class="provider-badge">NEU</span>' : ''}
     </a>
   `).join('');
 }
 
 function sidebar(active){
-  const {path,params}=route();const examKey=path==='mock'?params.get('exam'):path==='mock/live'?state.mock?.exam:null;const examLevel=examKey?.match(/-(a1|a2|b1|b2|c1)(?:-p\d+)?$/)?.[1];const curLvl = examLevel||extra.sidebarLevel||'a1';const activeExam=path==='mock'?`mock?exam=${params.get('exam')||'telc-a1'}`:path==='mock/live'?`mock?exam=${state.mock?.exam||'telc-a1'}`:active;
+  const {path,params}=route();
+  const examKey=path==='mock'?params.get('exam')||'telc-a1':path==='mock/live'?state.mock?.exam:null;
+  const routeLevel=examKey?.match(/-(a1|a2|b1|b2|c1)(?:-p\d+)?$/)?.[1]
+    || (path==='exams'?params.get('lvl'):path==='practice'?params.get('level'):null);
+  const curLvl=sidebarSelection||(/^(a1|a2|b1|b2|c1)$/.test(routeLevel)?routeLevel:null)||extra.sidebarLevel||'a1';
+  const activeExam=examKey?`mock?exam=${examKey}`:path==='practice'&&routeLevel?`practice?level=${routeLevel}`:active;
+  const thought=dailyThought(state.lang);
   return `<aside class="sidebar ${mobileOpen?'open':''}" aria-label="${esc(t('menu'))}">
   <a class="brand" href="#home"><img src="/public/icon.svg" alt="" width="38" height="38"><span>Everyday<span>German<span class="brand-dot">.</span></span></span></a><p class="brand-tag">${esc(t('tagline'))}</p>
   <a href="#home" class="nav-link ${active==='home'?'active':''}">${icon('home')}${state.lang==='de'?'Start':'Start'}</a>
@@ -75,9 +109,9 @@ function sidebar(active){
     <span class="nav-caption" style="margin:0">${esc(t('exams')).toUpperCase()}</span>
     <a href="#exams" class="small-muted" style="font-size:11px;font-weight:600">${esc(t('allLevels'))} →</a>
   </div>
-  <div class="exam-level-pills" role="tablist">
+  <div class="exam-level-pills" role="group" aria-label="${esc(t('allLevels'))}">
     ${['a1','a2','b1','b2','c1'].map(l=>`
-      <button type="button" class="level-pill-btn ${curLvl===l?'active':''}" data-action="pick-exam-level" data-level="${l}" role="tab" aria-selected="${curLvl===l}">
+      <button type="button" class="level-pill-btn ${curLvl===l?'active':''}" data-action="pick-exam-level" data-level="${l}" aria-pressed="${curLvl===l}">
         ${l.toUpperCase()}
       </button>
     `).join('')}
@@ -107,7 +141,7 @@ function sidebar(active){
   <a href="#about" class="nav-link ${active==='about'?'active':''}">${icon('info')}${esc(t('about'))}</a>
 
   <div class="sidebar-bottom" style="margin-top:auto;padding-top:16px">
-    <div class="grow-note">${icon('spark')}<p>${esc(curLvl==='a2'?(state.lang==='de'?'Die telc-A2-Prüfungsübung ist verfügbar. Weitere Kurse und Niveaus folgen.':'The telc A2 practice exam is available. More courses and levels are on the way.'):t('later'))}</p></div>
+    <div class="grow-note">${icon('spark')}<p><strong>${esc(thought.title)}</strong><br><span data-daily-thought>${esc(thought.text)}</span><br><small data-daily-source>${state.lang==='de'?'Inspiriert von':'Inspired by'} ${esc(thought.source)}</small></p></div>
     <div class="sidebar-foot">EVERYDAY GERMAN · 2026</div>
   </div></aside>`;
 }
@@ -289,10 +323,36 @@ function telcPaperRows(){
   }).join('');
 }
 
+function officialPractice(format){
+  const de=state.lang==='de';
+  return `<section class="card exam-format-guide">
+    <h2>${de?'Prüfungsformat':'Exam format'}</h2>
+    <div class="task-actions">
+      ${format.online?`<a class="button primary" href="${esc(format.online)}" target="_blank" rel="noopener">${de?'Offiziellen Modellsatz online üben':'Practise the official model exam online'} ↗</a>`:''}
+      <a class="button ${format.online?'secondary':'primary'}" href="${esc(format.download||format.source)}" target="_blank" rel="noopener">${de?'Offizielles Aufgabenheft, Audio und Lösungen':'Official booklet, audio and answer key'} ${format.download?'↓':'↗'}</a>
+      ${format.download?`<a href="${esc(format.source)}" target="_blank" rel="noopener">${de?'Prüfungsanbieter':'Exam provider'} ↗</a>`:''}
+    </div>
+    <ul class="exam-details">${format.rows.map(([section, minutes, parts])=>`<li>
+      ${icon(skillIcon[section==='Hören'?'hoeren':section.toLowerCase()]||'book')}
+      <div><strong lang="de">${esc(section)}</strong> · ${esc(minutes)} ${esc(t('minutes'))}
+      <ol lang="de">${parts.map(part=>`<li>${esc(part)}</li>`).join('')}</ol></div>
+    </li>`).join('')}</ul>
+    ${format.rows.some(([, minutes])=>minutes.endsWith('*'))?`<p class="small-muted">${de?'* Gemeinsame Prüfungszeit für die markierten Bereiche.':'* The marked sections share one time limit.'}</p>`:''}
+    ${format.rows.some(([, minutes])=>minutes.includes('+'))?`<p class="small-muted">${de?'Beim Sprechen steht die Vorbereitungszeit nach dem Pluszeichen.':'For speaking, the time after the plus sign is preparation.'}</p>`:''}
+    ${format.breakMinutes?`<p>${de?'Nach Lesen und Sprachbausteinen folgt eine Pause von 20 Minuten.':'A 20-minute break follows Reading and Language Elements.'}</p>`:''}
+  </section>`;
+}
+
 function mockLanding(){
   const {params}=route();
   const examKey=params.get('exam')||'telc-a1';
   const suite=MOCK_EXAM_SUITES[examKey]||MOCK_EXAM_SUITES['telc-a1'];
+  const format=examFormats[examKey]||(isTelcA1(examKey)?examFormats['telc-a1']:null);
+  if(format&&!format.native){
+    const de=state.lang==='de';
+    return `<div class="page-heading"><h1 tabindex="-1">${esc(format.name)}</h1><p>${de?'Der vollständige Modellsatz steht beim Prüfungsanbieter mit Hörtexten und Lösungen bereit.':'The exam provider hosts the full model exam with recordings and solutions.'}</p></div>${officialPractice(format)}
+      <div class="task-actions">${btn('#practice?level='+suite.level,de?'Allgemeines Sprachtraining':'General language practice',false)}${state.mock?btn('#mock/live',t('mockResume'),false):''}</div>`;
+  }
   const intro=isTelcA2(examKey)?`<div class="page-heading"><span class="eyebrow">TELC A2 · START DEUTSCH 2</span><h1 tabindex="-1">${state.lang==='de'?'Eigene A2-Übungen':'Original A2 practice'}</h1><p>${state.lang==='de'?'Eine vollständige Übungsprüfung im aktuellen Format von Start Deutsch 2. Aufgaben und Lösungen bleiben auf Deutsch.':'A complete practice paper in the current Start Deutsch 2 format. Questions and answers stay in German.'}</p></div>`:isTelcB1(examKey)?`<div class="page-heading"><span class="eyebrow">TELC B1 · ZERTIFIKAT DEUTSCH</span><h1 tabindex="-1">${state.lang==='de'?'Eigene B1-Übungsprüfung':'Original B1 practice'}</h1><p>${state.lang==='de'?'Üben Sie alle fünf Prüfungsteile im telc-B1-Format. Aufgaben und Lösungen sind auf Deutsch.':'Practice all five exam sections in the telc B1 format. Questions and answers stay in German.'}</p></div>`:isTelcB2(examKey)?`<div class="page-heading"><span class="eyebrow">TELC B2 · ZERTIFIKAT DEUTSCH</span><h1 tabindex="-1">${state.lang==='de'?'Eigene B2-Übungsprüfung':'Original B2 practice'}</h1><p>${state.lang==='de'?'Üben Sie alle fünf Prüfungsteile im telc-B2-Format. Aufgaben und Lösungen sind auf Deutsch.':'Practice all five exam sections in the telc B2 format. Questions and answers stay in German.'}</p></div>`:pageHeader('mockHeading','mockIntro');
   return `${intro}${isTelcA1(examKey)||isTelcA2(examKey)||isTelcB1(examKey)||isTelcB2(examKey)?telcInfo(state.lang,examKey):''}
   <section class="mock-intro card">
@@ -318,14 +378,15 @@ function mockLanding(){
         <p>${isTelcA1(examKey)||isTelcA2(examKey)||isTelcB1(examKey)||isTelcB2(examKey)?esc(state.lang==='de'?'Eigene Aufgaben nach dem telc-Format. Hörtexte sind synthetisch. Schreiben und Sprechen werden manuell bewertet.':'Original tasks following the telc format. Listening uses synthetic speech. Writing and speaking need manual practice assessment.'):esc(t('mockCaution'))}</p>
       </div>
       ${state.mock?`
-        ${btn('#mock/live',t('mockResume'))}
+        ${btn('#mock/live',state.mock.exam===examKey?t('mockResume'):(state.lang==='de'?'Laufende Prüfung fortsetzen':'Resume current '+state.mock.exam.replace(/-/g,' ').toUpperCase()+' attempt'))}
         <button class="text-button" data-action="new-mock" data-exam="${esc(examKey)}">${esc(t('mockNew'))}</button>
       `:`
         <button class="button primary" data-action="start-mock" data-exam="${esc(examKey)}">${esc(t('mockStart'))}${icon('arrow')}</button>
       `}
     </div>
   </section>
-  ${examKey==='telc-a1'?`<section class="section"><div class="section-heading"><div><h2>${esc(t('telcPapersTitle'))}</h2><p>${esc(t('telcPapersText'))}</p></div><span class="little-pill">${TELC_PAPERS.length}</span></div><div class="card activity-list">${telcPaperRows()}</div></section>`:''}`;
+  ${examKey==='telc-a1'?`<section class="section"><div class="section-heading"><div><h2>${esc(t('telcPapersTitle'))}</h2><p>${esc(t('telcPapersText'))}</p></div><span class="little-pill">${TELC_PAPERS.length}</span></div><div class="card activity-list">${telcPaperRows()}</div></section>`:''}
+  ${format?officialPractice(format):''}`;
 }
 
 function mockLive(){
@@ -586,10 +647,16 @@ function submitMock(expired=false){
 }
 
 app.addEventListener('click',e=>{
+ const link=e.target.closest('a[href^="#"]');
+ if(link&&!e.defaultPrevented&&e.button===0&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey&&!link.target&&!link.hasAttribute('download')){
+   e.preventDefault();
+   navigate(link.getAttribute('href'));
+   return;
+ }
  const button=e.target.closest('[data-action]');if(!button)return;const action=button.dataset.action,id=button.dataset.id;
  if(action==='menu'){mobileOpen=!mobileOpen;render();document.querySelector(mobileOpen?'.sidebar a':'.mobile-menu')?.focus();}
  if(action==='lang'){state.lang=button.dataset.lang==='de'?'de':'en';persist();render();announce('');}
- if(action==='pick-exam-level'){extra.sidebarLevel=button.dataset.level;saveExtra();render();}
+ if(action==='pick-exam-level'){selectSidebarLevel(button.dataset.level);return;}
  if(action==='word-meaning'){wordMeaning=true;render();}
  if(action==='retry'){checked.delete(id);delete state.drafts[id];persist();render();}
  if(action==='model'){const q=findExercise(id);if(!q)return;if(q.type==='writing'&&!state.drafts[id]?.trim()){document.querySelector('textarea')?.focus();announce(t('needDraft'));return;}selfReviews.add(id);render();}
@@ -704,7 +771,7 @@ app.addEventListener('input',e=>{
 app.addEventListener('change',e=>{
  const field=e.target;if(field.dataset.telcRating||field.dataset.telcForm){const result=state.exams.find(x=>x.id===field.dataset.result);if(!isCurrentTelc(result))return;result.ratings||={writing:{},speaking:{}};result.formReviews||={};if(field.dataset.telcRating){const domain=field.dataset.telcRating;const entry=(domain==='writing'?writingCriteria(result):speakingCriteria(result)).find(([k])=>k===field.dataset.key);if(!entry)return;if(field.value==='')delete result.ratings[domain][entry[0]];else if(allowedRatings(entry[1]).includes(Number(field.value)))result.ratings[domain][entry[0]]=Number(field.value);}else{if(field.value==='')delete result.formReviews[field.dataset.telcForm];else result.formReviews[field.dataset.telcForm]=field.value==='1';}persist();const openDetails=[...document.querySelectorAll('.telc-assessment details')].map(x=>x.open);const old=document.querySelector('.telc-assessment');const sections=getMockSections(result.exam,mockIds,result.formatVersion);old.outerHTML=telcAssessment(result,{lang:state.lang,sections,find:findExercise,grade});document.querySelectorAll('.telc-assessment details').forEach((x,i)=>x.open=openDetails[i]);return;}if(e.target.id==='part-filter')updateFilters();});
 function updateFilters(){const current=route().params;const query=document.querySelector('#search').value,part=document.querySelector('#part-filter').value;if(query)current.set('q',query);else current.delete('q');if(part!=='all')current.set('part',part);else current.delete('part');history.replaceState(null,'','#practice'+(current.size?'?'+current.toString():''));document.querySelector('#exercise-list').innerHTML=exerciseList(current);}
-window.addEventListener('hashchange',()=>{mobileOpen=false;wordRevealed=false;render(true);});
+window.addEventListener('hashchange',renderRoute);
 document.querySelector('.skip-link').addEventListener('click',e=>{e.preventDefault();const main=document.querySelector('#main');main.setAttribute('tabindex','-1');main.focus();main.scrollIntoView();});
 window.addEventListener('pagehide',stopAudio);
 document.addEventListener('click',e=>{const palette=document.querySelector('.palette-menu');if(palette&&!palette.contains(e.target))palette.open=false;});
