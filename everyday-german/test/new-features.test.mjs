@@ -158,17 +158,28 @@ test('curated 100% free native German personas are configured with audio files a
   }
 });
 
-test('Goethe and telc exam suites and Allgemein practice sets exist for all levels A1 through C1', async () => {
-  const { MOCK_EXAM_SUITES, EXAM_LEVELS } = await import('../src/curriculum.js');
+test('Goethe and telc exam suites and Allgemein practice sets exist for all levels A1 through C2', async () => {
+  const { MOCK_EXAM_SUITES, EXAM_LEVELS, getMockSections } = await import('../src/curriculum.js');
   const { LEVEL_EXERCISES, getExercisesForLevel } = await import('../src/level-exercises.js');
-  const { exercises } = await import('../src/content.js');
+  const { exercises, mockIds } = await import('../src/content.js');
+  const { findExercise } = await import('../src/exercise-catalog.js');
 
-  const levels = ['a1', 'a2', 'b1', 'b2', 'c1'];
+  const levels = ['a1', 'a2', 'b1', 'b2', 'c1', 'c2'];
+  assert.deepEqual(EXAM_LEVELS.map(l=>l.id).filter(id=>levels.includes(id)), levels);
   for (const lvl of levels) {
     assert.ok(MOCK_EXAM_SUITES[`goethe-${lvl}`], `Goethe ${lvl} exam suite must exist`);
     assert.ok(MOCK_EXAM_SUITES[`telc-${lvl}`], `telc ${lvl} exam suite must exist`);
     assert.ok(MOCK_EXAM_SUITES[`goethe-${lvl}`].name.includes('Goethe'));
     assert.ok(MOCK_EXAM_SUITES[`telc-${lvl}`].name.includes('telc'));
+
+    const sections = getMockSections(`goethe-${lvl}`, mockIds);
+    assert.equal(sections.length, 4, `goethe-${lvl} must resolve four sections`);
+    for (const section of sections) {
+      assert.ok(section.ids.length >= 1, `goethe-${lvl} ${section.skill} must have items`);
+      for (const id of section.ids) {
+        assert.ok(findExercise(id), `${id} must exist in the catalogue`);
+      }
+    }
 
     const levelExercises = getExercisesForLevel(lvl, exercises);
     assert.ok(levelExercises.length >= 4, `Level ${lvl} must have at least 4 Allgemein exercises`);
@@ -187,4 +198,53 @@ test('Goethe and telc exam suites and Allgemein practice sets exist for all leve
       }
     }
   }
+});
+
+test('innovative practice bank covers every level and format with valid data', async () => {
+  const { PRACTICE_BANK, GRAMMAR_MAP } = await import('../src/practice-bank.js');
+  const { practiceByLevel } = await import('../src/practice-catalog.js');
+  const { findExercise } = await import('../src/exercise-catalog.js');
+  const { isObjective, grade } = await import('../src/state.js');
+
+  const levels = ['a1','a2','b1','b2','c1','c2'];
+  const ids = new Set();
+  for (const level of levels) {
+    const cats = PRACTICE_BANK[level];
+    for (const cat of ['grammatik','hoeren','lesen','schreiben','sprechen']) {
+      const items = cats?.[cat]||[];
+      assert.ok(items.length >= 2, `${level}/${cat} needs at least 2 bank items`);
+      for (const item of items) {
+        assert.ok(!ids.has(item.id), `duplicate bank id ${item.id}`);
+        ids.add(item.id);
+        assert.equal(item.level, level);
+        assert.equal(item.skill, cat==='grammatik'?'grammar':cat);
+        assert.ok(item.explanation.en && item.explanation.de, `${item.id} needs bilingual explanation`);
+        if (item.type==='choice') {
+          assert.ok(item.answer>=0 && item.answer<item.options.length, `${item.id} bad answer index`);
+          assert.equal(new Set(item.options).size, item.options.length, `${item.id} duplicate options`);
+        }
+        if (item.type==='input') {
+          assert.ok(item.answer && item.answer.length>0, `${item.id} needs an answer key`);
+          if (item.dictation) {
+            assert.ok(item.transcript===item.answer || item.transcript.length>20, `${item.id} dictation needs a transcript`);
+          }
+        }
+        if (item.type==='wordorder') {
+          const strip = w => w.toLocaleLowerCase('de-DE').replace(/[.,!?;:]/g,'');
+          const tokensSorted = item.tokens.map(strip).filter(Boolean).sort().join(' ');
+          const answerSorted = item.answer.split(' ').map(strip).filter(Boolean).sort().join(' ');
+          assert.equal(tokensSorted, answerSorted, `${item.id} tokens must rebuild the answer`);
+          assert.ok(grade(item, item.answer), `${item.id} correct answer must grade true`);
+          assert.ok(isObjective(item), `${item.id} wordorder must be objective`);
+        }
+        if (item.type==='writing') assert.ok(item.model, `${item.id} writing needs a model answer`);
+        // Bank items are registered in the practice lists and the exercise catalogue.
+        assert.ok(practiceByLevel[level].some(q=>q.id===item.id), `${item.id} missing from practiceByLevel`);
+        assert.ok(findExercise(item.id), `${item.id} missing from exercise catalogue`);
+      }
+    }
+    // Grammar taxonomy: every level has topics; A1 topics cover all 75 lessons.
+    assert.ok((GRAMMAR_MAP[level]||[]).length >= 5, `${level} grammar map needs topics`);
+  }
+  assert.equal(GRAMMAR_MAP.a1.flatMap(t=>t.lessons).length, 75, 'A1 grammar topics must map all 75 lessons');
 });

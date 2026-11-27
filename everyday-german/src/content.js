@@ -62,31 +62,33 @@ const baseLessons = [
 
 export const exercises = [...expandExercises(baseExercises), ...telcPaperExercises];
 export const lessons = [...baseLessons,...extraLessons];
+import { LEVEL_WORDS } from './vocabulary-bank.js';
 export const vocabulary = [
- ['v1','der Termin','die Termine','appointment','Ich habe morgen einen Termin.','Zeitpunkt für ein Treffen oder einen Besuch'],
- ['v2','die Rechnung','die Rechnungen','bill / invoice','Die Rechnung, bitte.','Liste der Kosten, die man bezahlen muss'],
- ['v3','das Frühstück','—','breakfast','Zum Frühstück trinke ich Tee.','Erste Mahlzeit am Morgen'],
- ['v4','der Bahnhof','die Bahnhöfe','train station','Der Zug fährt vom Bahnhof ab.','Ort, an dem Züge halten'],
- ['v5','die Wohnung','die Wohnungen','flat / apartment','Meine Wohnung hat zwei Zimmer.','Räume, in denen man wohnt'],
- ['v6','das Formular','die Formulare','form','Bitte füllen Sie das Formular aus.','Blatt mit Feldern für persönliche Angaben'],
- ['v7','der Schlüssel','die Schlüssel','key','Wo ist mein Schlüssel?','Damit öffnet man eine Tür'],
- ['v8','die Haltestelle','die Haltestellen','bus / tram stop','Ich warte an der Haltestelle.','Ort, an dem Bus oder Straßenbahn halten'],
- ['v9','das Geschäft','die Geschäfte','shop','Das Geschäft öffnet um neun.','Ort, an dem man etwas kaufen kann'],
- ['v10','der Nachbar','die Nachbarn','neighbour','Mein Nachbar ist sehr nett.','Person, die in der Nähe wohnt'],
- ['v11','die Einladung','die Einladungen','invitation','Danke für die Einladung!','Bitte, zu einem Fest oder Treffen zu kommen'],
- ['v12','das Zimmer','die Zimmer','room','Ich suche ein Zimmer.','Einzelner Raum in einer Wohnung oder einem Hotel'],
- ['v13','bezahlen','—','to pay','Kann ich mit Karte bezahlen?','Geld für etwas geben'],
- ['v14','mitbringen','—','to bring along','Bitte bringen Sie Ihr Buch mit.','Etwas an einen anderen Ort mitnehmen'],
- ['v15','abholen','—','to pick up','Ich hole dich am Bahnhof ab.','Zu einem Ort gehen und jemanden mitnehmen'],
- ['v16','öffnen','—','to open','Können Sie die Tür öffnen?','Eine Tür oder ein Fenster aufmachen'],
- ['v17','geschlossen','—','closed','Am Sonntag ist die Bank geschlossen.','Nicht geöffnet'],
- ['v18','pünktlich','—','on time','Der Bus kommt pünktlich.','Genau zur vereinbarten Zeit'],
- ['v19','die Adresse','die Adressen','address','Wie ist Ihre Adresse?','Straße, Hausnummer und Ort'],
- ['v20','der Geburtstag','die Geburtstage','birthday','Am Freitag habe ich Geburtstag.','Tag, an dem man geboren wurde'],
- ['v21','die Hausaufgabe','die Hausaufgaben','homework task','Ich mache meine Hausaufgaben.','Aufgabe zum Lernen zu Hause'],
- ['v22','das Wochenende','die Wochenenden','weekend','Am Wochenende habe ich Zeit.','Samstag und Sonntag'],
- ['v23','der Preis','die Preise','price','Wie hoch ist der Preis?','Geldbetrag, den etwas kostet'],
- ['v24','die Versichertenkarte','die Versichertenkarten','health insurance card','Bringen Sie Ihre Versichertenkarte mit.','Karte für den Besuch beim Arzt']
-].map(([id,word,plural,en,example,de])=>({id,word,plural,en,example,de}));
+  ['v1','der Termin','die Termine','appointment','Ich habe morgen einen Termin.','Zeitpunkt für ein Treffen oder einen Besuch'],
+  ['v2','die Rechnung','die Rechnungen','bill / invoice','Die Rechnung, bitte.','Liste der Kosten, die man bezahlen muss'],
+  ['v3','das Frühstück','—','breakfast','Zum Frühstück trinke ich Tee.','Erste Mahlzeit am Morgen'],
+  ['v4','der Bahnhof','die Bahnhöfe','train station','Der Zug fährt vom Bahnhof ab.','Ort, an dem Züge halten'],
+  ['v5','die Wohnung','die Wohnungen','flat / apartment','Meine Wohnung hat zwei Zimmer.','Räume, in denen man wohnt'],
+  ['v6','das Formular','die Formulare','form','Bitte füllen Sie das Formular aus.','Blatt mit Feldern für persönliche Angaben'],
+  ['v7','der Schlüssel','die Schlüssel','key','Wo ist mein Schlüssel?','Damit öffnet man eine Tür'],
+  ['v8','die Haltestelle','die Haltestellen','bus / tram stop','Ich warte an der Haltestelle.','Ort, an dem Bus oder Straßenbahn halten'],
+  ['v9','das Geschäft','die Geschäfte','shop','Das Geschäft öffnet um neun.','Ort, an dem man etwas kaufen kann'],
+  ['v10','der Nachbar','die Nachbarn','neighbour','Mein Nachbar ist sehr nett.','Person, die in der Nähe wohnt'],
+  ['v11','die Einladung','die Einladungen','invitation','Danke für die Einladung!','Bitte, zu einem Fest oder Treffen zu kommen'],
+  ['v12','das Zimmer','die Zimmer','room','Ich suche ein Zimmer.','Einzelner Raum in einer Wohnung oder einem Hotel'],
+  ['v13','bezahlen','—','to pay','Kann ich mit Karte bezahlen?','Geld für etwas geben'],
+  ['v14','mitbringen','—','to bring along','Bitte bringen Sie Ihr Buch mit.','Etwas an einen anderen Ort mitnehmen'],
+  ['v15','abholen','—','to pick up','Ich hole dich am Bahnhof ab.','Zu einem Ort gehen und jemanden mitnehmen'],
+  ['v16','öffnen','—','to open','Können Sie die Tür öffnen?','Eine Tür oder ein Fenster aufmachen'],
+  ['v17','geschlossen','—','closed','Am Sonntag ist die Bank geschlossen.','Nicht geöffnet'],
+  ['v18','pünktlich','—','on time','Der Bus kommt pünktlich.','Genau zur vereinbarten Zeit'],
+  ['v19','die Adresse','die Adressen','address','Wie ist Ihre Adresse?','Straße, Hausnummer und Ort'],
+  ['v20','der Geburtstag','die Geburtstage','birthday','Am Freitag habe ich Geburtstag.','Tag, an dem man geboren wurde'],
+  ['v21','die Hausaufgabe','die Hausaufgaben','homework task','Ich mache meine Hausaufgaben.','Aufgabe zum Lernen zu Hause'],
+  ['v22','das Wochenende','die Wochenenden','weekend','Am Wochenende habe ich Zeit.','Samstag und Sonntag'],
+  ['v23','der Preis','die Preise','price','Wie hoch ist der Preis?','Geldbetrag, den etwas kostet'],
+  ['v24','die Versichertenkarte','die Versichertenkarten','health insurance card','Bringen Sie Ihre Versichertenkarte mit.','Karte für den Besuch beim Arzt']
+].map(([id,word,plural,en,example,de])=>({id,word,plural,en,example,de,level:'a1'}))
+ .concat(LEVEL_WORDS.map(w=>({...w})));
 
 export const mockIds = ['hoeren','lesen','schreiben','sprechen'].map(skill=>({skill,ids:baseExercises.filter(q=>q.skill===skill && (q.type!=='writing'||q.id==='w1') && (q.type!=='speaking'||['s1','s3','s5'].includes(q.id))).map(q=>q.id)}));

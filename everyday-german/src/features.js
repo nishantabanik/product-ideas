@@ -1,10 +1,12 @@
+import {levels,practiceLevel} from './practice-catalog.js';
+import {examFormats} from './exam-formats.js';
 import {cvTools,installCVTools} from './cv-tools.js';
 import {exercises,lessons,vocabulary} from './content.js';
 import {CEFR_LEVELS,CEFR_LESSONS} from './cefr.js';
 import {DRILL_MODES,DRILL_ITEMS} from './grammar-drills.js';
 import {INTONATION_PROFILES,detectPitch,drawPitchCanvas} from './pitch-trainer.js';
 import {playAudioFile,playTTS} from './audio.js';
-import {EXAM_LEVELS,TOPIC_PACKS,SITUATION_MODULES,MOCK_EXAM_SUITES} from './curriculum.js';
+import {SITUATION_MODULES,MOCK_EXAM_SUITES} from './curriculum.js';
 
 export const themes=['sage','ocean','lavender','sand','rose','dark'];
 
@@ -333,131 +335,26 @@ export function extraView(path,params,{state,extra}){
   }
 
   if(path==='exams'){
-    const selectedLevel=params.get('lvl')||extra.sidebarLevel||'a1';
-    return `
-      <div class="page-heading" style="margin-bottom:24px">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-          <div>
-            <span class="eyebrow">${u('EXAM PREPARATION','PRÜFUNGSVORBEREITUNG')}</span>
-            <h1 tabindex="-1" style="margin-bottom:6px">${u('German Exams & Certifications','Deutschprüfungen & Zertifikate')}</h1>
-            <p>${u('Compare Goethe and telc exam formats and open official practice materials for A1 to C1.','Vergleichen Sie Goethe- und telc-Prüfungsformate und öffnen Sie offizielle Übungsmaterialien für A1 bis C1.')}</p>
-          </div>
-          <div class="apple-segmented-bar" style="margin:0">
-            ${EXAM_LEVELS.map(lvl=>`<a href="#exams?lvl=${lvl.id}" class="apple-segmented-item ${selectedLevel===lvl.id?'active':''}">${E(lvl.code)}</a>`).join('')}
-          </div>
-        </div>
+    const level=practiceLevel(params.get('lvl'));
+    return head(u('Mock Exams','Probeprüfungen'),u('Choose a level and an exam provider.','Wählen Sie ein Niveau und einen Prüfungsanbieter.'))+`
+      <div class="skill-tabs practice-level-tabs" aria-label="${u('Mock exam levels','Niveaus der Probeprüfungen')}">
+        ${levels.map(item=>`<a class="tab ${level===item?'active':''}" href="#exams?lvl=${item}" ${level===item?'aria-current="true"':''}>${item.toUpperCase()}</a>`).join('')}
       </div>
-
       <div class="exam-hub-grid">
-        ${EXAM_LEVELS.map(lvl=>{
-          const isLvlActive=selectedLevel===lvl.id;
-          return `
-            <div class="exam-hub-card ${isLvlActive?'active-level':''}" style="${isLvlActive?'border-color:var(--accent,#2563eb);box-shadow:0 0 0 1px var(--accent,#2563eb)':''}">
-              <div>
-                <div style="display:flex;justify-content:space-between;align-items:flex-start">
-                  <div class="level-tag">${E(lvl.code)}</div>
-                  ${lvl.free?`<span class="provider-badge" style="background:#10b98122;color:#059669">${u('Free','Kostenlos')}</span>`:''}
-                </div>
-                <h2 style="font-size:18px;margin:8px 0 6px">${E(u(lvl.name.en,lvl.name.de))}</h2>
-                <p style="font-size:13px;line-height:1.5;margin-bottom:12px">${E(u(lvl.desc.en,lvl.desc.de))}</p>
-                <div class="provider-chips">
-                  ${lvl.boards.map(b=>`<span class="provider-chip">${E(b.name)}</span>`).join('')}
-                </div>
-              </div>
-              <div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap">
-                  ${['a1','a2','b1','b2','c1'].includes(lvl.id)?`
-                    <a href="#mock?exam=goethe-${lvl.id}" class="button primary" style="flex:1;min-width:105px;font-size:12px;padding:8px 8px;text-align:center">Goethe ${lvl.code} →</a>
-                    <a href="#mock?exam=telc-${lvl.id}" class="button secondary" style="flex:1;min-width:105px;font-size:12px;padding:8px 8px;text-align:center">telc ${lvl.code} →</a>
-                    <a href="#practice?level=${lvl.id}" class="button secondary" style="flex:1;min-width:105px;font-size:12px;padding:8px 8px;text-align:center">Allgemein ${lvl.code} →</a>
-                  `:`
-                    <a href="#practice" class="button secondary" style="flex:1;font-size:12px;padding:8px 12px;text-align:center">${u('Start practice','Übung starten')} →</a>
-                  `}
-                </div>
-              </div>
-            </div>
-          `;
+        ${['goethe','telc'].map(provider=>{
+          const key=provider+'-'+level;
+          const format=examFormats[key];
+          return `<section class="exam-hub-card">
+            <span class="little-pill">${level.toUpperCase()}</span>
+            <h2>${E(format.name||'telc Deutsch '+level.toUpperCase())}</h2>
+            <p>${format.native
+              ?u('Timed mock exam in Everyday German and official provider materials.','Probeprüfung mit Zeitlimit in Everyday German und offizielle Materialien.')
+              :u('Official model exams and recordings from the provider.','Offizielle Modellsätze und Hördateien des Prüfungsanbieters.')}</p>
+            <a class="button primary" href="#mock?exam=${key}">${u('View mock exam','Probeprüfung ansehen')} →</a>
+          </section>`;
         }).join('')}
       </div>
-
-      <div style="margin-top:36px">
-        <span class="eyebrow">${u('LEARNING & GAMES','LERNEN & SPIELE')}</span>
-        <div class="apple-card-grid" style="grid-template-columns:1fr 1fr;margin-top:12px">
-          <div class="apple-box" style="display:flex;flex-direction:column;justify-content:space-between">
-            <div>
-              <h2 style="font-size:20px;margin-bottom:6px">${u('Learn','Lernen')}</h2>
-              <p>${u('Grammar, core vocabulary, and interactive dialogues A1–C1.','Grammatik, Wörter und Dialoge A1–C1.')}</p>
-            </div>
-            <div style="margin-top:16px"><a href="#learn" class="button primary" style="font-size:13px">${u('Open learning path','Ansehen')} →</a></div>
-          </div>
-          <div class="apple-box" style="display:flex;flex-direction:column;justify-content:space-between">
-            <div>
-              <h2 style="font-size:20px;margin-bottom:6px">${u('Games & Mechanics','Spiele & Mechanik')}</h2>
-              <p>${u('Gamified vocabulary drills, article trainer, and sentence builders.','Wörter spielerisch lernen, Artikelgarten und Satzwerkstatt.')}</p>
-            </div>
-            <div style="margin-top:16px"><a href="#games" class="button secondary" style="font-size:13px">${u('Play drills','Spielen')} →</a></div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  if(path==='words'){
-    const filterLvl=params.get('filter')||'all';
-    const totalWords=8346;
-    return `
-      <div class="page-heading" style="margin-bottom:20px">
-        <span class="eyebrow">${u('VOCABULARY & TOPIC PACKS','WORTSCHATZ & THEMEN')}</span>
-        <h1 tabindex="-1">${u('Words & Topic Collections','Wortschatz & Themenkatalog')}</h1>
-        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px">
-          <span class="provider-chip"><strong>${totalWords}</strong> ${u('Total words','Gesamtwortschatz')}</span>
-          <span class="provider-chip" style="background:#3b82f622;color:#2563eb"><strong>0</strong> ${u('Learning','Im Lernprozess')}</span>
-          <span class="provider-chip" style="background:#f59e0b22;color:#d97706"><strong>0</strong> ${u('At risk','Unsicher')}</span>
-          <span class="provider-chip" style="background:#10b98122;color:#059669"><strong>${vocabulary.length}</strong> ${u('Mastered A1','Gemeistert A1')}</span>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
-        <a href="#vocabulary?mode=all" class="button primary" style="font-size:12px">🗂 ${u('Cards','Lernkarten')}</a>
-        <a href="#games?mode=words" class="button secondary" style="font-size:12px">🧩 ${u('Pairs','Wortpaare')}</a>
-        <a href="#words?filter=hard" class="button secondary" style="font-size:12px">⚡ ${u('Hard words','Schwere Wörter')}</a>
-        <a href="#situations" class="button secondary" style="font-size:12px">💬 ${u('Situations','Situationen')}</a>
-      </div>
-
-      <div class="apple-segmented-bar">
-        ${['all','a1','a2','b1','b2','beruf','pruefung','redewendungen'].map(f=>`
-          <a href="#words?filter=${f}" class="apple-segmented-item ${filterLvl===f?'active':''}">
-            ${f==='all'?u('All','Alle'):f.toUpperCase()}
-          </a>
-        `).join('')}
-      </div>
-
-      <div class="apple-card-grid">
-        ${TOPIC_PACKS.map(tp=>`
-          <div class="topic-tile">
-            <div class="topic-icon-wrap">${tp.icon}</div>
-            <div style="flex:1;min-width:0">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <strong style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${E(u(tp.name.en,tp.name.de))}</strong>
-                <span class="small-muted" style="font-size:11px">0/${tp.count}</span>
-              </div>
-              <p style="font-size:11px;margin:2px 0 6px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${E(tp.preview)}</p>
-              <a href="#vocabulary?mode=all" class="text-link" style="font-size:11px">${u('Practice cards','Karten lernen')} →</a>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-
-      <div style="margin-top:32px">
-        <span class="eyebrow">${u('QUICK MECHANICS DRILLS','SCHNELL-TRAINING')}</span>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-          <a href="#games?mode=articles" class="button secondary" style="font-size:12px">📙 ${u('Articles (der/die/das)','Artikel')}</a>
-          <a href="#games?mode=words" class="button secondary" style="font-size:12px">📚 ${u('Plural','Plural')}</a>
-          <a href="#games?mode=grammar" class="button secondary" style="font-size:12px">↔ ${u('Opposites (Antonyme)','Gegenteile')}</a>
-          <a href="#drills?mode=verben" class="button secondary" style="font-size:12px">⚡ ${u('Verbs with prepositions','Verben mit Präpositionen')}</a>
-        </div>
-      </div>
-    `;
+      ${state.mock?`<p class="task-actions"><a class="button secondary" href="#mock/live">${u('Resume mock exam','Probeprüfung fortsetzen')}</a></p>`:''}`;
   }
 
   if(path==='situations'){
@@ -766,9 +663,18 @@ export function extraView(path,params,{state,extra}){
   return null;
 }
 
+function shuffle(items){
+  const copy = [...items];
+  for(let i=copy.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [copy[i],copy[j]]=[copy[j],copy[i]];
+  }
+  return copy;
+}
+
 function createDrill(mode){
   const items=DRILL_ITEMS[mode]||DRILL_ITEMS.kasus;
-  const shuffled=[...items].sort(()=>Math.random()-.5);
+  const shuffled=shuffle(items);
   return {mode,items:shuffled,index:0,score:0,checked:false,correct:false,saved:false};
 }
 
@@ -821,7 +727,7 @@ function drillView(d,lang,head,u,extra){
 function createGame(mode){
   const nouns=vocabulary.filter(v=>/^(der|die|das) /.test(v.word));
   const pool=mode==='readiness'||mode==='grammar'?lessons.map(l=>({...l.quiz,explanation:l.explanation})):nouns.map((v,i)=>mode==='articles'?{prompt:v.word.replace(/^(der|die|das) /,''),options:['der','die','das'],answer:['der','die','das'].indexOf(v.word.split(' ')[0]),explanation:{en:v.word,de:v.word}}:mode==='words'?{prompt:v.word,options:[v.de,nouns[(i+1)%nouns.length].de,nouns[(i+2)%nouns.length].de],answer:0,explanation:{en:v.en,de:v.de}}:mode==='spelling'?{prompt:'Hören Sie das Wort und schreiben Sie es.',spoken:v.word,answer:v.word,explanation:{en:v.en,de:v.de}}:{prompt:'Bringen Sie die Wörter in die richtige Reihenfolge.',tokens:v.example.replace(/[.!?]$/,'').split(' ').reverse(),answer:v.example.replace(/[.!?]$/,''),explanation:{en:v.en,de:v.de}});
-  const shuffled=[...pool].sort(()=>Math.random()-.5).slice(0,10).map(q=>{if(!q.options)return q;const pairs=q.options.map((v,i)=>({v,right:i===q.answer})).sort(()=>Math.random()-.5);return {...q,options:pairs.map(p=>p.v),answer:pairs.findIndex(p=>p.right)};});
+  const shuffled=shuffle(pool).slice(0,10).map(q=>{if(!q.options)return q;const pairs=shuffle(q.options.map((v,i)=>({v,right:i===q.answer})));return {...q,options:pairs.map(p=>p.v),answer:pairs.findIndex(p=>p.right)};});
   return {mode,items:shuffled,index:0,score:0,checked:false,correct:false,picked:[],saved:false};
 }
 
