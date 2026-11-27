@@ -1,15 +1,44 @@
 import {spawn} from 'node:child_process';
 import {createServer} from 'node:http';
-import {readFile, stat, mkdir} from 'node:fs/promises';
-import {createHash} from 'node:crypto';
+import {readFile, stat, mkdir, readdir, rename, rm} from 'node:fs/promises';
+import {createHash, randomUUID} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
-import {exercises} from './src/content.js';
+import {allExercises} from './src/exercise-catalog.js';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const port = Number(process.env.PORT || 4173);
 const types = {'.mp3':'audio/mpeg','.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.webmanifest':'application/manifest+json','.json':'application/json'};
 let extracting=0;
+
+const audioDir = path.join(root, 'public/audio');
+const cacheDir = path.join(audioDir, 'cache');
+const listeningIds = allExercises.filter(q => q.skill === 'hoeren').map(q => q.id);
+const pendingTTS = new Map();
+
+async function generateAudio(cacheFile, args){
+  const temporary = path.join(cacheDir, '.' + randomUUID() + '.mp3');
+  try{
+    await mkdir(cacheDir, {recursive:true});
+    await new Promise((resolve, reject) => {
+      const child = spawn('python3', [...args, '--write-media', temporary], {stdio:'ignore'});
+      const timer = setTimeout(() => child.kill('SIGKILL'), 20000);
+      child.once('close', code => {
+        clearTimeout(timer);
+        if(code === 0)resolve();
+        else reject(new Error('Audio generation failed'));
+      });
+      child.once('error', error => {
+        clearTimeout(timer);
+        reject(error);
+      });
+    });
+    if((await stat(temporary)).size <= 100)throw new Error('Empty audio');
+    await rename(temporary, cacheFile);
+  }finally{
+    await rm(temporary, {force:true});
+  }
+}
 
 const voiceMap = {
   katja: 'de-DE-KatjaNeural',
@@ -39,10 +68,12 @@ const server = createServer(async (req,res) => {
     const pathname = decodeURIComponent(url.pathname);
 
     if(pathname==='/api/audio-status'){
-      const available=[];
-      for(const q of exercises.filter(q=>q.skill==='hoeren')){
-        try{await stat(path.join(root,'public/audio',q.id+'.mp3'));available.push(q.id);}catch{}
-      }
+      const files = await readdir(audioDir, {withFileTypes:true}).catch(error => {
+        if(error.code === 'ENOENT')return [];
+        throw error;
+      });
+      const filenames = new Set(files.filter(file => file.isFile()).map(file => file.name));
+      const available = listeningIds.filter(id => filenames.has(id + '.mp3'));
       res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});
       res.end(JSON.stringify({available}));
       return;
@@ -61,28 +92,31 @@ const server = createServer(async (req,res) => {
       const pitchMatch = /^[+-]?\d{1,3}$/.test(pitchRaw) ? Math.max(-50, Math.min(50, Number(pitchRaw))) : 0;
       const pitchFlag = pitchMatch ? (pitchMatch > 0 ? '+' : '') + pitchMatch + 'Hz' : '';
 
-      const edgeVoice = voiceMap[voiceKey] || voiceMap.katja;
+      const edgeVoice = Object.hasOwn(voiceMap, voiceKey) ? voiceMap[voiceKey] : voiceMap.katja;
       // Rate/pitch are part of the cache key only when set, so older cached files stay valid.
       let keyPrefix = rateFlag ? edgeVoice + '|rate' + rateMatch : edgeVoice;
       if(pitchFlag){ keyPrefix += '|pitch' + pitchMatch; }
       const hash = createHash('sha256').update(keyPrefix + ':' + text).digest('hex').slice(0, 20);
-      const cacheDir = path.join(root, 'public/audio/cache');
-      await mkdir(cacheDir, {recursive: true});
-      const cacheFile = path.join(cacheDir, `${hash}.mp3`);
-
-      let exists = false;
-      try { const s = await stat(cacheFile); exists = s.size > 100; } catch {}
-      if(!exists){
-        if(instant){ res.writeHead(404, {'Content-Type':'text/plain'}); res.end('Not generated yet'); return; }
-        const ttsArgs = ['-m', 'edge_tts', '--voice', edgeVoice, '--text', text, '--write-media', cacheFile];
-        if(rateFlag){ ttsArgs.push('--rate=' + rateFlag); }
-        if(pitchFlag){ ttsArgs.push('--pitch=' + pitchFlag); }
-        await new Promise((resolve, reject) => {
-          const child = spawn('python3', ttsArgs);
-          const timer = setTimeout(() => { child.kill(); reject(new Error('TTS timeout')); }, 20000);
-          child.on('close', code => { clearTimeout(timer); code === 0 ? resolve() : reject(new Error('TTS exit ' + code)); });
-          child.on('error', err => { clearTimeout(timer); reject(err); });
-        });
+      const cacheFile = path.join(cacheDir, hash + '.mp3');
+      const isCached = () => stat(cacheFile).then(file => file.isFile() && file.size > 100, () => false);
+      if(instant){
+        if(!(await isCached())){
+          res.writeHead(404, {'Content-Type':'text/plain'});
+          res.end('Not generated yet');
+          return;
+        }
+      }else{
+        if(!pendingTTS.has(cacheFile)){
+          const prepare = async () => {
+            if(await isCached())return;
+            const args = ['-m', 'edge_tts', '--voice', edgeVoice, '--text', text];
+            if(rateFlag)args.push('--rate=' + rateFlag);
+            if(pitchFlag)args.push('--pitch=' + pitchFlag);
+            await generateAudio(cacheFile, args);
+          };
+          pendingTTS.set(cacheFile, prepare().finally(() => pendingTTS.delete(cacheFile)));
+        }
+        await pendingTTS.get(cacheFile);
       }
 
       const data = await readFile(cacheFile);
@@ -98,10 +132,19 @@ const server = createServer(async (req,res) => {
     const relative = pathname === '/' ? 'index.html' : pathname.slice(1);
     const file = path.resolve(root, relative);
     if (!file.startsWith(root) || relative.split('/').some(p=>p.startsWith('.')) || !['index.html','src','public'].includes(relative.split('/')[0])) { res.writeHead(404); res.end('Not found'); return; }
-    if (!(await stat(file)).isFile()) throw new Error('Not a file');
-    const data = await readFile(file);
-    res.writeHead(200, {'Content-Type':types[path.extname(file)] || 'application/octet-stream','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; media-src 'self' data: blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"});
-    res.end(req.method === 'HEAD' ? undefined : data);
+    const info = await stat(file, {bigint:true});
+    if (!info.isFile()) throw new Error('Not a file');
+    const etag = '"' + info.ino.toString(16) + '-' + info.size.toString(16) + '-' + info.mtimeNs.toString(16) + '"';
+    const headers = {'Content-Type':types[path.extname(file)] || 'application/octet-stream','Cache-Control':'no-cache','ETag':etag,'X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; media-src 'self' data: blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"};
+    const validators = req.headers['if-none-match']?.split(',').map(tag => tag.trim().replace(/^W\//, ''));
+    if(validators?.includes('*') || validators?.includes(etag)){
+      res.writeHead(304, headers);
+      res.end();
+      return;
+    }
+    const data = req.method === 'HEAD' ? undefined : await readFile(file);
+    res.writeHead(200, {...headers, 'Content-Length':data?.length ?? info.size.toString()});
+    res.end(data);
   } catch { res.writeHead(404,{'Content-Type':'text/plain'}); res.end('Not found'); }
 });
 server.listen(port, '127.0.0.1', () => console.log(`Everyday German: http://localhost:${port}`));

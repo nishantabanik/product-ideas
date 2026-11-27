@@ -405,6 +405,75 @@ export const LEVEL_EXERCISES = {
         de: 'Hochdifferenzierte Darlegung ethischer und juristischer Fragestellungen auf C1-Niveau.'
       }
     }
+  ],
+
+  c2: [
+    // --- C2 LESEN (Reading) ---
+    {
+      id: 'c2-r1',
+      level: 'c2',
+      skill: 'lesen',
+      part: 1,
+      title: 'Feuilleton: Sprachpflege zwischen Übereinkunft und Oktroy',
+      text: 'Der Jubel über neue Sprachverbote verkennt die Eigendynamik lebendiger Idiome: Sprache reguliert sich nicht durch Dekret, sondern durch die stille Übereinkunft der Sprechergemeinschaft. Wer Sprachpflege mit Sprachpolizei verwechselt, verteidigt nicht Reinheit, sondern behauptet Kontrolle — und verliert doch bei jeder Generation aufs Neue gegen den Eigensinn des Gebrauchs. Die eigentliche Pointe jeder Sprachkritik besteht mithin nicht im Verdikt, sondern in der Aufmerksamkeit.',
+      prompt: 'Welche Haltung kritisiert der Autor?',
+      options: ['Sprachpflege als Kontrolle und Dekret', 'Den natürlichen Sprachwandel', 'Die Vielfalt der Dialekte'],
+      answer: 0,
+      explanation: {
+        en: 'He criticizes those who confuse language care (Sprachpflege) with language policing (Sprachpolizei).',
+        de: 'Er kritisiert jene, die Sprachpflege mit Sprachpolizei verwechseln.'
+      },
+      type: 'choice'
+    },
+    // --- C2 HÖREN (Listening) ---
+    {
+      id: 'c2-h1',
+      level: 'c2',
+      skill: 'hoeren',
+      part: 1,
+      title: 'Hörfunkessay: Die Präformierung wissenschaftlicher Studien',
+      transcript: 'Man mag über die Resultate der Studie streiten — ihre methodische Stringenz steht außer Frage. Doch die eigentliche Pointe liegt woanders: Sie zeigt, dass schon die Art der Fragestellung das Ergebnis präformiert. Wer nach Bedrohung fragt, findet Bedrohung; wer nach Chancen fragt, findet Chancen. Die Studie ist damit weniger eine Antwort als ein Spiegel der Debatte selbst.',
+      prompt: 'Was ist die Pointe des Essays?',
+      options: ['Die Fragestellung präformiert bereits das Ergebnis der Studie.', 'Die Studie ist methodisch unbrauchbar.', 'Die Debatte sollte sofort beendet werden.'],
+      answer: 0,
+      explanation: {
+        en: 'The essay\'s actual point: the framing of the question pre-shapes results — the study mirrors the debate.',
+        de: 'Die Pointe: Die Frageformulierung prägt das Ergebnis — die Studie spiegelt die Debatte.'
+      },
+      type: 'choice'
+    },
+    // --- C2 SCHREIBEN (Writing) ---
+    {
+      id: 'c2-w1',
+      level: 'c2',
+      skill: 'schreiben',
+      part: 1,
+      type: 'writing',
+      title: 'Essay: Sprachregulierung zwischen Schutz und Zensur',
+      prompt: 'Schreiben Sie einen Essay (ca. 140 Wörter): „Sprachregulierung zwischen Schutz und Zensur — wo endet Sprachpflege, wo beginnt Sprachpolizei?“ Berücksichtigen Sie begriffliche Differenzierung, ein historisches oder aktuelles Beispiel und eine begründete eigene Position.',
+      points: ['Begriffsklärung', 'Historisches oder aktuelles Beispiel', 'Differenzierte Abwägung', 'Eigene begründete Position'],
+      model: 'Sprachpflege beginnt dort, wo Sprechende sich ihrer Traditionen bewusst werden; Sprachpolizei beginnt dort, wo Dritte den Gebrauch oktroyieren. Die Grenze verläuft mithin nicht zwischen Korrektur und Laissez-faire, sondern zwischen Überzeugung und Zwang. Ratschläge zur „richtigen“ Sprache, wie sie Sprachgesellschaften seit dem Barock publizieren, gehören zur ersten Kategorie; Verbotslisten und sanktionierte Sprechweisen zur zweiten. Eine lebendige Sprachgemeinschaft braucht beides: die Pflege, die Orientierung stiftet — und die Freiheit, sich gegen jede Vorschrift entscheiden zu können.',
+      explanation: {
+        en: 'C2 register: conceptual distinction, concrete example, dialectical structure and a clearly reasoned own position.',
+        de: 'C2-Register: Begriffsdifferenzierung, Beispiel, Dialektik und begründete Eigenposition.'
+      }
+    },
+    // --- C2 SPRECHEN (Speaking) ---
+    {
+      id: 'c2-s1',
+      level: 'c2',
+      skill: 'sprechen',
+      part: 1,
+      type: 'speaking',
+      title: 'Rhetorische Meisterprobe: Vortrag und offene Debatte',
+      prompt: 'Halten Sie einen ca. dreiminütigen Vortrag über die These: „Wahrheit ist eine Frage des Registers.“ Nutzen Sie Registerwechsel, Analogien und eine pointierte Schlusswendung.',
+      points: ['Einstieg mit These', 'Registerwechsel Laien/Fachsprache', 'Analogie oder Beispiel', 'Pointierte Schlusswendung'],
+      model: 'Dass dieselbe Aussage in der Kneipe eine Behauptung und im Hörsaal eine These ist, klingt nach Haarspalterei — ist aber der Kern der Sache. In der Allgemeinsprache gilt: „Stimmt, weil ich es so erlebe.“ In der Fachsprache gilt: „Gilt, sofern die Methodik trägt.“ Eine Analogie: Der Landvermesser und der Wanderer stehen auf demselben Berg, doch nur einer kann sagen, wie hoch er ist. Wenn also jemand behauptet, die Wahrheit habe ein Register, dann meint er nicht ihre Beliebigkeit, sondern ihre Verantwortung: Wer im Fachregister spricht, haftet für seine Sätze. Vielen Dank — und nun gerne die Einwände, die ich am liebsten provoziert habe.',
+      explanation: {
+        en: 'Sovereign register shifts, an extended analogy and a self-aware closing twist — C2 pragmatics.',
+        de: 'Souveräne Registerwechsel, eine Analogie und eine ironische Schlusswendung — C2-Pragmatik.'
+      }
+    }
   ]
 };
 

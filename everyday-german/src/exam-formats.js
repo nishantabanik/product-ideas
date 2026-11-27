@@ -87,6 +87,27 @@ export const examFormats = {
       ['Sprechen', '15 + 20', ['Über Erfahrungen sprechen und Fragen beantworten', 'Einen Text als Ausgangspunkt für eine Diskussion nutzen', 'Gemeinsam etwas planen']]
     ]
   },
+  'goethe-c2': {
+    name: 'Goethe-Zertifikat C2 · Großes Deutsches Sprachdiplom',
+    source: 'https://www.goethe.de/de/spr/prf/ueb/pc2.html',
+    online: 'https://bfu.goethe.de/c2_mod/',
+    rows: [
+      ['Lesen', '80', ['4 Teile: Detailfragen und Zuordnungen zu Textausschnitten und Aussagen']],
+      ['Hören', '35', ['3 Teile: Aussagen zu Radioausschnitten prüfen, Positionen zuordnen und Detailfragen beantworten']],
+      ['Schreiben', '80', ['Textpassagen umformulieren', 'Einen Text zu einem allgemeinen oder literaturbezogenen Thema schreiben']],
+      ['Sprechen', '15 + 15', ['Einen Vortrag halten und Rückfragen beantworten', 'Ein kontroverses Thema diskutieren']]
+    ]
+  },
+  'telc-c2': {
+    name: 'telc Deutsch C2',
+    source: 'https://www.telc.net/sprachpruefungen/zertifikatspruefung/deutsch/telc-deutsch-c2/',
+    rows: [
+      ['Lesen', '80', ['5 Aufgaben zum Textanschluss', '10 Detailfragen (A–C)', '10 Zuordnungen zu Details und impliziten Aussagen']],
+      ['Hören und Schreiben', '60', ['Einen gehörten Text schriftlich zusammenfassen']],
+      ['Schreiben', '90', ['Eine Erörterung oder Stellungnahme verfassen']],
+      ['Sprechen', '15 + 20', ['Vortrag halten', 'Vertiefendes Gespräch führen']]
+    ]
+  },
   'telc-c1': {
     name: 'telc Deutsch C1 · Allgemeinsprache', source: 'https://www.telc.net/sprachpruefungen/zertifikatspruefung/deutsch/telc-deutsch-c1/',
     download: 'https://www.telc.net/fileadmin/user_upload/mock_exams/Deutsch/telc_deutsch_c1.zip',

@@ -85,6 +85,22 @@ export const EXAM_LEVELS = [
     ]
   },
   {
+    id: 'c2',
+    code: 'C2',
+    name: { en: 'C2 · Near-Native Mastery', de: 'C2 · Muttersprachliches Niveau' },
+    desc: {
+      en: 'Literary nuance, legal and academic register, and effortless rhetorical control.',
+      de: 'Literarische Nuancen, Juristen- und Wissenschaftsdeutsch, souveräne Rhetorik.'
+    },
+    tasks: 389,
+    free: false,
+    boards: [
+      { id: 'goethe-c2', name: 'Goethe C2 (GDS)', new: true, type: 'goethe', level: 'c2', timeMin: 200 },
+      { id: 'telc-c2', name: 'telc C2', new: true, type: 'telc', level: 'c2', timeMin: 195 },
+      { id: 'allg-c2', name: 'Allgemein C2', new: false, type: 'allgemein', level: 'c2', timeMin: 150 }
+    ]
+  },
+  {
     id: 'fachsprache',
     code: 'Fachsprache',
     name: { en: 'Medical & Healthcare German', de: 'Fachsprache: Medizin & Pflege' },
@@ -442,6 +458,32 @@ export const MOCK_EXAM_SUITES = {
       { id: 'schreiben', title: 'Schreiben', time: '80 min', count: 1, desc: 'Akademisch strukturierter Text mit Ursache-Wirkung-Synthese.' },
       { id: 'sprechen', title: 'Sprechen', time: '15 min', count: 1, desc: 'Fachmonolog und kontroverse Debatte im universitären Register.' }
     ]
+  },
+  'goethe-c2': {
+    code: 'goethe-c2',
+    name: 'Goethe-Zertifikat C2 · GDS',
+    badge: 'GOETHE C2',
+    level: 'c2',
+    timeMinutes: 200,
+    sections: [
+      { id: 'lesen', title: 'Lesen', time: '80 min', count: 1, desc: 'Anspruchsvolle Sachtexte, literarische Prosa und Kommentare.' },
+      { id: 'hoeren', title: 'Hören', time: '35 min', count: 1, desc: 'Vorträge, Radiobeiträge und komplexe Gespräche im Originaltempo.' },
+      { id: 'schreiben', title: 'Schreiben', time: '80 min', count: 1, desc: 'Essay und Rezension auf muttersprachlichem Niveau.' },
+      { id: 'sprechen', title: 'Sprechen', time: '15 min', count: 1, desc: 'Vortrag und Diskussion mit stilistischer Souveränität.' }
+    ]
+  },
+  'telc-c2': {
+    code: 'telc-c2',
+    name: 'telc Deutsch C2 · Allgemein',
+    badge: 'TELC C2',
+    level: 'c2',
+    timeMinutes: 195,
+    sections: [
+      { id: 'lesen', title: 'Lesen', time: '90 min', count: 1, desc: 'Feuilleton, Fachtexte und literarische Nuancen.' },
+      { id: 'hoeren', title: 'Hören', time: '40 min', count: 1, desc: 'Hörfunkessays, Gesprächsrunden und Diskussionen.' },
+      { id: 'schreiben', title: 'Schreiben', time: '75 min', count: 1, desc: 'Essay mit Registerwechsel und stilistischer Differenzierung.' },
+      { id: 'sprechen', title: 'Sprechen', time: '15 min', count: 1, desc: 'Präsentation, Verhandlung und rhetorische Interaktion.' }
+    ]
   }
 };
 
@@ -493,6 +535,14 @@ export function getMockSections(examKey = 'telc-a1', baseMockIds = [], formatVer
       { skill: 'hoeren', ids: ['c1-h1'] },
       { skill: 'schreiben', ids: ['c1-w1'] },
       { skill: 'sprechen', ids: ['c1-s1'] }
+    ];
+  }
+  if (level === 'c2') {
+    return [
+      { skill: 'lesen', ids: ['c2-r1'] },
+      { skill: 'hoeren', ids: ['c2-h1'] },
+      { skill: 'schreiben', ids: ['c2-w1'] },
+      { skill: 'sprechen', ids: ['c2-s1'] }
     ];
   }
   return baseMockIds;

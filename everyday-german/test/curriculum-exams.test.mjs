@@ -15,9 +15,9 @@ test('exam suites cover Goethe and telc for A1, A2, and B1', () => {
   }
 });
 
-test('exam levels include A1 through C1 and Fachsprache', () => {
+test('exam levels include A1 through C2 and Fachsprache', () => {
   const levelIds = EXAM_LEVELS.map(l => l.id);
-  assert.deepEqual(levelIds, ['a1', 'a2', 'b1', 'b2', 'c1', 'fachsprache']);
+  assert.deepEqual(levelIds, ['a1', 'a2', 'b1', 'b2', 'c1', 'c2', 'fachsprache']);
   for (const lvl of EXAM_LEVELS) {
     assert.ok(lvl.name?.de && lvl.name?.en, `Level ${lvl.id} missing bilingual name`);
     assert.ok(Array.isArray(lvl.boards) && lvl.boards.length >= 2, `Level ${lvl.id} has too few boards`);

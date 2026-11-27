@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {exercises,lessons,vocabulary,mockIds} from '../src/content.js';
+import {LEVEL_EXERCISES} from '../src/level-exercises.js';
 import {messages} from '../src/i18n.js';
 import {initialState,grade,recordAttempt,stats,loadState,saveState,sanitizeState,startMock,remainingSeconds,finishMock,objectiveResults,STORAGE_KEY} from '../src/state.js';
 
@@ -41,7 +42,7 @@ test('catalogue integrity: unique IDs, valid keys, bilingual explanations and no
  assert.equal(new Set(exercises.map(q=>q.id)).size,exercises.length);assert.equal(exercises.length,500); // 300 core + 195 existing paper tasks + five corrected dialogue items; legacy IDs retained
  for(const q of exercises){assert.ok(q.explanation.en);assert.ok(q.explanation.de);assert.ok(q.prompt);if(q.type==='choice'){assert.ok(q.answer>=0&&q.answer<q.options.length);assert.equal(new Set(q.options).size,q.options.length);}if(q.skill==='hoeren')assert.ok(q.transcript.length>40);}
  for(const section of mockIds)for(const id of section.ids)assert.ok(exercises.find(q=>q.id===id));
- assert.equal(lessons.length,75);assert.equal(vocabulary.length,24);
+ assert.equal(lessons.length,75);assert.equal(vocabulary.length,84); // 24 core A1 words + 60 level-graded words (A2–C2)
 });
 test('English and German UI dictionaries have matching keys with no missing translations',()=>{
  assert.deepEqual(Object.keys(messages.en).sort(),Object.keys(messages.de).sort());for(const lang of ['en','de'])for(const text of Object.values(messages[lang]))assert.ok(text.trim());
@@ -50,4 +51,15 @@ test('expanded catalogue has balanced activities per skill and varied correct po
  const expectedPerSkill={lesen:150,hoeren:155,schreiben:105,sprechen:90}; // 75 core each + existing paper tasks + five versioned sixth dialogues
  for(const skill of ['lesen','hoeren','schreiben','sprechen'])assert.equal(exercises.filter(q=>q.skill===skill).length,expectedPerSkill[skill]);
  for(const l of lessons){assert.ok(l.rule.en);assert.ok(l.rule.de);assert.ok(l.examples.length>=3);assert.equal(new Set(l.quiz.options).size,l.quiz.options.length);assert.ok(l.quiz.options[l.quiz.answer]);}
+});
+
+test('higher-level practice drafts, attempts and history survive reload',()=>{
+ const q=LEVEL_EXERCISES.b1.find(item=>item.type==='choice');
+ const state=initialState();
+ state.drafts[q.id]=q.answer;
+ recordAttempt(state,q,q.answer,42);
+ const restored=sanitizeState(JSON.parse(JSON.stringify(state)));
+ assert.deepEqual(restored,state);
+ assert.equal(stats(restored).completed,1);
+ assert.equal(stats(restored).accuracy,100);
 });
