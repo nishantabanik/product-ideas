@@ -83,10 +83,12 @@ const THEMES: ThemeOption[] = [
 ];
 
 const STORAGE_KEY = "li_x_analyzer_theme";
+type Mode = "light" | "dark";
 
 export default function ThemeSwitcher() {
   const [currentTheme, setCurrentTheme] = useState<ThemeId>("dark");
   const [isOpen, setIsOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>("dark");
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Initialize theme from localStorage or document attribute
@@ -120,6 +122,12 @@ export default function ThemeSwitcher() {
     }
   }, [isOpen]);
 
+  const openPanel = () => {
+    const active = THEMES.find((t) => t.id === currentTheme);
+    setMode(active && !active.dark ? "light" : "dark");
+    setIsOpen(true);
+  };
+
   const selectTheme = (id: ThemeId) => {
     setCurrentTheme(id);
     document.documentElement.setAttribute("data-theme", id);
@@ -128,16 +136,16 @@ export default function ThemeSwitcher() {
     } catch {
       // ignore
     }
-    // Collapse back immediately after selection
     setIsOpen(false);
   };
 
   const activeOption = THEMES.find((t) => t.id === currentTheme) || THEMES[0];
+  const visibleThemes = THEMES.filter((t) => (mode === "dark") === t.dark);
 
   return (
     <div
       ref={containerRef}
-      className={`theme-switcher-wrapper ${isOpen ? "open" : "collapsed"}`}
+      className="theme-switcher-wrapper"
       style={{
         position: "fixed",
         top: 14,
@@ -146,13 +154,12 @@ export default function ThemeSwitcher() {
       }}
     >
       {!isOpen ? (
-        // Collapsed state: Compact pill taking very little space
         <button
           type="button"
-          onClick={() => setIsOpen(true)}
+          onClick={openPanel}
           className="theme-trigger-btn"
           aria-label="Change color theme"
-          title={`Theme: ${activeOption.name} (click to expand color palette)`}
+          title={`Theme: ${activeOption.name} (click to change)`}
         >
           <span
             className="theme-swatch-dot"
@@ -177,52 +184,75 @@ export default function ThemeSwitcher() {
           </svg>
         </button>
       ) : (
-        // Expanded horizontal palette section
-        <div className="theme-palette-bar" role="radiogroup" aria-label="Color Palette">
-          <div className="theme-palette-header">
-            <span className="theme-palette-icon">🎨</span>
-            <span className="theme-palette-title">Palette</span>
+        <div className="theme-panel" role="dialog" aria-label="Appearance">
+          <div className="theme-panel-head">
+            <span className="theme-panel-title">
+              Appearance
+              <a href="https://tweakcn.com/" target="_blank" rel="noreferrer">
+                tweakcn ↗
+              </a>
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="theme-close-btn"
+              aria-label="Close"
+              title="Close"
+            >
+              ✕
+            </button>
           </div>
 
-          <div className="theme-options-row">
-            {THEMES.map((theme) => {
+          <div className="mode-row" role="tablist" aria-label="Mode">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "light"}
+              className={`mode-btn${mode === "light" ? " on" : ""}`}
+              onClick={() => setMode("light")}
+            >
+              Light
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "dark"}
+              className={`mode-btn${mode === "dark" ? " on" : ""}`}
+              onClick={() => setMode("dark")}
+            >
+              Dark
+            </button>
+          </div>
+
+          <div className="theme-list">
+            {visibleThemes.map((theme) => {
               const isSelected = theme.id === currentTheme;
               return (
                 <button
                   key={theme.id}
                   type="button"
                   onClick={() => selectTheme(theme.id)}
-                  className={`theme-option-pill ${isSelected ? "selected" : ""}`}
-                  title={`${theme.name}${isSelected ? " (Active)" : ""}`}
+                  className={`theme-item${isSelected ? " selected" : ""}`}
+                  title={theme.name}
                 >
                   <span
-                    className="theme-option-swatch"
-                    style={{
-                      background: theme.swatch,
-                      borderColor: isSelected ? theme.accent : "rgba(158,178,214,.3)",
-                    }}
+                    className="theme-item-swatch"
+                    style={{ background: theme.swatch }}
                   />
-                  <span className="theme-option-name">{theme.name}</span>
+                  <span className="theme-item-name">{theme.name}</span>
                   {isSelected && (
                     <span
-                      className="theme-active-dot"
-                      style={{ background: theme.accent }}
-                    />
+                      className="theme-item-check"
+                      style={{ color: theme.accent }}
+                      aria-label="Active"
+                    >
+                      ✓
+                    </span>
                   )}
                 </button>
               );
             })}
           </div>
-
-          <button
-            type="button"
-            onClick={() => setIsOpen(false)}
-            className="theme-close-btn"
-            aria-label="Close palette"
-            title="Collapse"
-          >
-            ✕
-          </button>
         </div>
       )}
     </div>
